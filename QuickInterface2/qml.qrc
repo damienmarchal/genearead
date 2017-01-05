@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>MainForm.ui.qml</file>
+        <file>ColorPalet.qml</file>
+        <file>Cell.qml</file>
+        <file>Livret F.jpg</file>
+    </qresource>
+</RCC>
