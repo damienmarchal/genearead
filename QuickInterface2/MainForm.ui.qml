@@ -6,6 +6,10 @@ Item {
     id: item1
     width: 640
     height: 480
+    property alias itemPalet: itemPalet
+    property alias mouseArea1: mouseArea1
+    property alias colorText: colorText
+    property alias colorPalet: colorPalet
     property alias mouseArea: mouseArea
 
     property alias image: image
@@ -17,10 +21,17 @@ Item {
         width: 213
         height: 336
         source: "Livret F.jpg"
+
+        MouseArea {
+            id: mouseArea1
+            anchors.fill: parent
+            //onClicked: states.changes
+        }
     }
     Text {
         id: colorText
-        text: qsTr("Surlignez les lignes ! ")
+        //text: qsTr("Surlignez les lignes ! ")
+        text : itemPalet.currentItem
         anchors.top: parent.top
         anchors.topMargin: 10
         style: Text.Raised
@@ -41,6 +52,14 @@ Item {
     ColorPalet {
         id: colorPalet
         anchors.verticalCenterOffset: -100
+        anchors.verticalCenter: parent.verticalCenter
+        anchors.right: parent.right
+        anchors.rightMargin: 10
+    }
+
+    ItemPalet {
+        id: itemPalet
+        anchors.verticalCenterOffset: -160
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
         anchors.rightMargin: 10
