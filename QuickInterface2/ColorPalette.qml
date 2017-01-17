@@ -3,90 +3,117 @@ import QtQuick.Controls 1.5
 import QtQuick.Dialogs 1.2
 
 
+
 Rectangle {
     id: page
-    width: 60; height: 84
+    width: 100; height: 100
     color: "lightgray"
-    radius: 2
-    property color currentColorLeft
-    property color currentColorRight
+    radius: 1
+    property color currentColorLeft : "red"
+    property color currentColorRight : "blue"
 
     Grid {
         id: colorPicker
-        x: 0
-        anchors.top: parent.top
-        anchors.topMargin: 2
-        anchors.horizontalCenter: parent.horizontalCenter
+        x: 8
+        y: 8
+        width: 101
+        height: 100
         rows: 3
-        columns: 2
+        columns: 3
         spacing: 3
 
         Cell {
             cellColor: "red"
-            onClicked: {
-                if(mouseArea.pressedButtons == 1){
-                   currentColorLeft = cellColor
+            //onClicked: mouseArea.pressedButtons == 1 ? currentColorLeft = cellColor : currentColorRight = cellColor
+            onClicked:
+                if(mouseArea.pressedButtons == 1 && !Qt.colorEqual(cellColor,currentColorRight)){
+                    currentColorLeft = cellColor
                 }
-                else{
-                   currentColorRight = cellColor
+                else if (mouseArea.pressedButtons == 2 && !Qt.colorEqual(cellColor,currentColorLeft)){
+                    currentColorRight = cellColor
                 }
-            }
         }
         Cell {
             cellColor: "#1ee100"
-            onClicked: {
-                if(mouseArea.pressedButtons == 1){
-                   currentColorLeft = cellColor
+            //onClicked: mouseArea.pressedButtons == 1 ? currentColorLeft = cellColor : currentColorRight = cellColor
+            onClicked:
+                if(mouseArea.pressedButtons == 1 && !Qt.colorEqual(cellColor,currentColorRight)){
+                    currentColorLeft = cellColor
                 }
-                else{
-                   currentColorRight = cellColor
+                else if (mouseArea.pressedButtons == 2 && !Qt.colorEqual(cellColor,currentColorLeft)){
+                    currentColorRight = cellColor
                 }
-            }
         }
         Cell {
             cellColor: "blue"
-            onClicked: {
-                if(mouseArea.pressedButtons == 1){
-                   currentColorLeft = cellColor
+            //onClicked: mouseArea.pressedButtons == 1 ? currentColorLeft = cellColor : currentColorRight = cellColor
+            onClicked:
+                if(mouseArea.pressedButtons == 1 && !Qt.colorEqual(cellColor,currentColorRight)){
+                    currentColorLeft = cellColor
                 }
-                else{
-                   currentColorRight = cellColor
+                else if (mouseArea.pressedButtons == 2 && !Qt.colorEqual(cellColor,currentColorLeft)){
+                    currentColorRight = cellColor
                 }
-            }
-
         }
         Cell {
             cellColor: "yellow"
-            onClicked: {
-                if(mouseArea.pressedButtons == 1){
-                   currentColorLeft = cellColor
+           //onClicked: mouseArea.pressedButtons == 1 ? currentColorLeft = cellColor : currentColorRight = cellColor
+            onClicked:
+                if(mouseArea.pressedButtons == 1 && !Qt.colorEqual(cellColor,currentColorRight)){
+                    currentColorLeft = cellColor
                 }
-                else{
-                   currentColorRight = cellColor
+                else if (mouseArea.pressedButtons == 2 && !Qt.colorEqual(cellColor,currentColorLeft)){
+                    currentColorRight = cellColor
                 }
-            }
         }
         Cell {
             cellColor: "#9e02e1"
-            onClicked: {
-                if(mouseArea.pressedButtons == 1){
-                   currentColorLeft = cellColor
+            //onClicked: mouseArea.pressedButtons == 1 ? currentColorLeft = cellColor : currentColorRight = cellColor
+            onClicked:
+                if(mouseArea.pressedButtons == 1 && !Qt.colorEqual(cellColor,currentColorRight)){
+                    currentColorLeft = cellColor
                 }
-                else{
-                   currentColorRight = cellColor
+                else if (mouseArea.pressedButtons == 2 && !Qt.colorEqual(cellColor,currentColorLeft)){
+                    currentColorRight = cellColor
                 }
-            }
+        }
+        Cell {
+            cellColor: "#ff9e00"
+            //onClicked: mouseArea.pressedButtons == 1 ? currentColorLeft = cellColor : currentColorRight = cellColor
+            onClicked:
+                if(mouseArea.pressedButtons == 1 && !Qt.colorEqual(cellColor,currentColorRight)){
+                    currentColorLeft = cellColor
+                }
+                else if (mouseArea.pressedButtons == 2 && !Qt.colorEqual(cellColor,currentColorLeft)){
+                    currentColorRight = cellColor
+                }
+        }
+        Cell {
+            cellColor: "#ff8ee2"
+           // onClicked: mouseArea.pressedButtons == 1 ? currentColorLeft = cellColor : currentColorRight = cellColor
+            onClicked:
+                if(mouseArea.pressedButtons == 1 && !Qt.colorEqual(cellColor,currentColorRight)){
+                    currentColorLeft = cellColor
+                }
+                else if (mouseArea.pressedButtons == 2 && !Qt.colorEqual(cellColor,currentColorLeft)){
+                    currentColorRight = cellColor
+                }
         }
         Cell {
             cellColor: "#945d26"
-            onClicked: {
-                if(mouseArea.pressedButtons == 1){
-                   currentColorLeft = cellColor
+           // onClicked: mouseArea.pressedButtons == 1 ? currentColorLeft = cellColor : currentColorRight = cellColor
+            onClicked:
+                if(mouseArea.pressedButtons == 1 && !Qt.colorEqual(cellColor,currentColorRight)){
+                    currentColorLeft = cellColor
                 }
-                else{
-                   currentColorRight = cellColor
+                else if (mouseArea.pressedButtons == 2 && !Qt.colorEqual(cellColor,currentColorLeft)){
+                    currentColorRight = cellColor
                 }
-            }
         }
+
+        ColorCell {
+            //onClicked: console.log("More Color required")
+        }
+
     }
 }

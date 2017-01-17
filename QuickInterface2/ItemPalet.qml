@@ -5,19 +5,20 @@ import QtQuick.Dialogs 1.2
 
 Rectangle {
     id: page
-    width: 60; height:30
+    width: 100; height:30
     color: "lightgray"
-    radius: 2
+    radius: 1
     property string currentItem
 
     Grid {
         id: itemPicker
         x: 0
+        width: 78
         anchors.top: parent.top
         anchors.topMargin: 2
         anchors.horizontalCenter: parent.horizontalCenter
         rows: 1
-        columns: 2
+        columns: 3
         spacing: 3
 
         ItemCell {
@@ -29,6 +30,11 @@ Rectangle {
         ItemCell {
             onClicked: currentItem = cellItem
             cellItem: "Editing-Rectangle-icon.png"
+            //cellItem: "Livret F.jpg"
+        }
+        ItemCell {
+            onClicked: currentItem = cellItem
+            cellItem: "gomme.png"
             //cellItem: "Livret F.jpg"
         }
     }

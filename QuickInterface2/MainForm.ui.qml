@@ -59,25 +59,34 @@ Item {
     ]
     ItemPalet {
         id: itemPalet
-        anchors.verticalCenterOffset: -160
+        x: 532
+        anchors.verticalCenterOffset: -63
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
-        anchors.rightMargin: 10
+        anchors.rightMargin: 8
     }
     ColorPalette {
         id: colorPalet
-        x: 570
-        y: 101
+        x: 532
+        y: 42
+    }
+
+    ReturnColor {
+        id: returnColor
+        x: 560
+        y: 378
+        currentColorLeft: colorPalet.currentColorLeft
+        currentColorRight: colorPalet.currentColorRight
     }
 
     Text {
-        id: rightTextColor
-        x: 297
-        y: 417
-        width: 335
-        height: 39
-        text: qsTr("Regardez la belle couleur")
-        font.pixelSize: 30
-        color: colorPalet.currentColorRight
+        id: returnText
+        x: 532
+        y: 362
+        width: 116
+        height: 20
+        text: qsTr("Couleurs actuelles")
+        font.pointSize: 7
+        renderType: Text.NativeRendering
     }
 }

@@ -10,5 +10,9 @@
         <file>le-pinceau_318-9145.jpg</file>
         <file>pinceau.png</file>
         <file>ColorPalette.qml</file>
+        <file>ReturnColor.qml</file>
+        <file>plus.png</file>
+        <file>gomme.png</file>
+        <file>ColorCell.qml</file>
     </qresource>
 </RCC>
