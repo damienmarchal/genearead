@@ -14,5 +14,7 @@
         <file>plus.png</file>
         <file>gomme.png</file>
         <file>ColorCell.qml</file>
+        <file>PainterPalet.qml</file>
+        <file>point.png</file>
     </qresource>
 </RCC>

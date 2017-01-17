@@ -37,7 +37,7 @@ Item {
         font.family: "Arial"
         fontSizeMode: Text.HorizontalFit
         anchors.horizontalCenter: parent.horizontalCenter
-        font.pixelSize: 25
+        font.pixelSize: painterPalet.currentSize
         color: colorPalet.currentColorLeft
 
         MouseArea {
@@ -73,7 +73,7 @@ Item {
 
     ReturnColor {
         id: returnColor
-        x: 532
+        x: 552
         y: 378
         currentColorLeft: colorPalet.currentColorLeft
         currentColorRight: colorPalet.currentColorRight
@@ -88,5 +88,12 @@ Item {
         text: qsTr("Couleurs actuelles")
         font.pointSize: 7
         renderType: Text.NativeRendering
+    }
+
+    PainterPalet {
+        id: painterPalet
+        x: 532
+        y: 199
+        visible: itemPalet.paintMenu
     }
 }
