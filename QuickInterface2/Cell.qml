@@ -18,6 +18,9 @@ Item {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        onClicked: container.clicked(container.cellColor)
+        acceptedButtons: Qt.AllButtons
+        //onClicked: container.clicked(container.cellColor)
+        //onPressed: console.log(pressedButtons)
+        onPressed: container.clicked(container.cellColor)
     }
 }

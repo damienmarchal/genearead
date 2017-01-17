@@ -17,6 +17,14 @@ ApplicationWindow {
                 onTriggered: console.log("Open action triggered");
             }
             MenuItem {
+                text: qsTr("&Save")
+                onTriggered: console.log("Save action triggered");
+            }
+            MenuItem {
+                text: qsTr("&Close Image")
+                onTriggered: console.log("Close image action triggered");
+            }
+            MenuItem {
                 text: qsTr("Exit")
                 onTriggered: Qt.quit();
             }
@@ -37,12 +45,7 @@ ApplicationWindow {
             font.pixelSize: 25
             color: colorPalet.currentColor
 
-        }
-
-        ColorPalet{
-            id:colorPalet
         }*/
-
     }
 
     MessageDialog {

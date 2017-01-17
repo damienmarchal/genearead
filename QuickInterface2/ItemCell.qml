@@ -14,6 +14,7 @@ Item {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
+        acceptedButtons: Qt.AllButtons
         onClicked: container.clicked(container.cellItem)
     }
 

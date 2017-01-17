@@ -2,7 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>MainForm.ui.qml</file>
-        <file>ColorPalet.qml</file>
         <file>Cell.qml</file>
         <file>Livret F.jpg</file>
         <file>ItemCell.qml</file>
@@ -10,5 +9,6 @@
         <file>Editing-Rectangle-icon.png</file>
         <file>le-pinceau_318-9145.jpg</file>
         <file>pinceau.png</file>
+        <file>ColorPalette.qml</file>
     </qresource>
 </RCC>

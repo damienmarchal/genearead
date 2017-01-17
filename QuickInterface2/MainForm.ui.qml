@@ -9,7 +9,6 @@ Item {
     property alias itemPalet: itemPalet
     property alias mouseArea1: mouseArea1
     property alias colorText: colorText
-    property alias colorPalet: colorPalet
     property alias mouseArea: mouseArea
 
     property alias image: image
@@ -25,13 +24,12 @@ Item {
         MouseArea {
             id: mouseArea1
             anchors.fill: parent
-            //onClicked: states.changes
         }
     }
     Text {
         id: colorText
         //text: qsTr("Surlignez les lignes ! ")
-        text : itemPalet.currentItem
+        text: itemPalet.currentItem
         anchors.top: parent.top
         anchors.topMargin: 10
         style: Text.Raised
@@ -40,7 +38,7 @@ Item {
         fontSizeMode: Text.HorizontalFit
         anchors.horizontalCenter: parent.horizontalCenter
         font.pixelSize: 25
-        color: colorPalet.currentColor
+        color: colorPalet.currentColorLeft
 
         MouseArea {
             id: mouseArea
@@ -49,14 +47,16 @@ Item {
         }
     }
 
-    ColorPalet {
-        id: colorPalet
-        anchors.verticalCenterOffset: -100
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.right: parent.right
-        anchors.rightMargin: 10
-    }
-
+    states: [
+        State {
+            name: "State1"
+            when: mouseArea.containsMouse
+            PropertyChanges {
+                target: colorText
+                visible: false
+            }
+        }
+    ]
     ItemPalet {
         id: itemPalet
         anchors.verticalCenterOffset: -160
@@ -64,15 +64,20 @@ Item {
         anchors.right: parent.right
         anchors.rightMargin: 10
     }
+    ColorPalette {
+        id: colorPalet
+        x: 570
+        y: 101
+    }
 
-    states: [
-        State {
-            name: "State1"
-            when: mouseArea.containsMouse
-            PropertyChanges {
-                target: colorText
-                visible : false
-            }
-        }
-    ]
+    Text {
+        id: rightTextColor
+        x: 297
+        y: 417
+        width: 335
+        height: 39
+        text: qsTr("Regardez la belle couleur")
+        font.pixelSize: 30
+        color: colorPalet.currentColorRight
+    }
 }
