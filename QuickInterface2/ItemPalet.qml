@@ -20,22 +20,70 @@ Rectangle {
         rows: 1
         columns: 3
         spacing: 3
+        Rectangle {
+            id: paintRectangle
+            x: 0
+            width: 25
+            height: 25
+            color:  "lightgray"
 
-        ItemCell {
-            onClicked: currentItem = cellItem
-            cellItem: "pinceau.png"
-            //cellItem: "Livret F.jpg"
+            ItemCell {
+                x: 0
+                y: 0
+                onClicked: {
+                    currentItem = cellItem
+                    paintRectangle.color = "darkgray"
+                    rectangleRectangle.color = "lightgray"
+                    eraserRectangle.color = "lightgray"
 
+                }
+                cellItem: "pinceau.png"
+                //cellItem: "Livret F.jpg"
+
+            }
         }
-        ItemCell {
-            onClicked: currentItem = cellItem
-            cellItem: "Editing-Rectangle-icon.png"
-            //cellItem: "Livret F.jpg"
+
+        Rectangle {
+            id: rectangleRectangle
+            x: 0
+            width: 25
+            height: 25
+            color:  "lightgray"
+
+            ItemCell {
+                x: 0
+                y: 0
+                onClicked: {
+                    currentItem = cellItem
+                    paintRectangle.color = "lightgray"
+                    rectangleRectangle.color = "darkgray"
+                    eraserRectangle.color = "lightgray"
+                }
+                cellItem: "Editing-Rectangle-icon.png"
+                //cellItem: "Livret F.jpg"
+            }
         }
-        ItemCell {
-            onClicked: currentItem = cellItem
-            cellItem: "gomme.png"
-            //cellItem: "Livret F.jpg"
+
+        Rectangle {
+            id: eraserRectangle
+            x: 0
+            width: 25
+            height: 25
+            color:  "lightgray"
+
+            ItemCell {
+                x: -2
+                y: 0
+                onClicked: {
+                    currentItem = cellItem
+                    paintRectangle.color = "lightgray"
+                    rectangleRectangle.color = "lightgray"
+                    eraserRectangle.color = "darkgray"
+                }
+                cellItem: "gomme.png"
+                //cellItem: "Livret F.jpg"
+            }
         }
+
     }
 }

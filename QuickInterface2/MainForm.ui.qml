@@ -73,7 +73,7 @@ Item {
 
     ReturnColor {
         id: returnColor
-        x: 560
+        x: 532
         y: 378
         currentColorLeft: colorPalet.currentColorLeft
         currentColorRight: colorPalet.currentColorRight
