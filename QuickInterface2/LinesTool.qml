@@ -11,21 +11,29 @@ Item {
     property color currentColorRight :  colorPalet.currentColorRight
     property string currentItem :  itemPalet.currentItem
     property int currentSize :  painterPalet.currentSize
+    property string imageSource : "triangleHaut.png"
+    property bool dispo : false
+    property int boxSize : 20
 
 
-    Item {
+    Rectangle{
         id: item1
         width: 200
-        height: 20
+        height: boxSize
+        color: dispo ? "#00000000" : "#626262"
+        enabled: dispo
 
         Text {
             id: title
             width: 120
             height: 20
             text: qsTr("Sélectionner les lignes")
+            font.pointSize: 10
+            enabled: false
+            styleColor: "#000000"
+            font.family: "Tahoma"
             anchors.left: parent.left
             anchors.leftMargin: 10
-            font.pointSize: 10
 
             Image {
                 id: fleche
@@ -35,7 +43,7 @@ Item {
                 height: 20
                 scale: 0.7
                 fillMode: Image.PreserveAspectFit
-                source: "triangleHaut.png"
+                source: imageSource
             }
 
         }
@@ -46,10 +54,12 @@ Item {
             onClicked: {
                 //fleche.source == "triangleHaut.png" ? "triangleBas.png" : "triangleHaut.png"
                 if(clickedTool){
-                    fleche.source = "triangleHaut.png"
+                   imageSource = "triangleHaut.png"
+                    boxSize = 20
                 }
                 else{
-                    fleche.source = "triangleBas.png"
+                    imageSource = "triangleBas.png"
+                     boxSize = 350
                 }
                 clickedTool = !clickedTool
             }

@@ -7,17 +7,26 @@ Item {
     width: 160
     height: 60
     property bool clickedTool: true
+    property string imageSource : "triangleBas.png"
+    property int boxSize : 60
+    /*property bool clickedTool: true
+     property string imageSource : "triangleHaut.png"
+     property int boxSize : 20*/
 
     Item {
         id: item1
         width: 160
-        height: 20
+        height: boxSize
 
         Text {
             id: title
             width: 120
             height: 20
             text: qsTr("Nettoyer le fond")
+            rightPadding: -2
+            bottomPadding: -3
+            font.family: "Arial"
+            font.capitalization: Font.MixedCase
             anchors.left: parent.left
             anchors.leftMargin: 10
             font.pointSize: 10
@@ -30,7 +39,7 @@ Item {
                 height: 29
                 scale: 0.7
                 fillMode: Image.PreserveAspectFit
-                source: "triangleBas.png"
+                source: imageSource
             }
 
         }
@@ -41,10 +50,12 @@ Item {
             onClicked: {
                 //fleche.source == "triangleHaut.png" ? "triangleBas.png" : "triangleHaut.png"
                 if(clickedTool){
-                    fleche.source = "triangleHaut.png"
+                    imageSource = "triangleHaut.png"
+                    boxSize = 20
                 }
                 else{
-                    fleche.source = "triangleBas.png"
+                    imageSource = "triangleBas.png"
+                    boxSize = 60
                 }
                 clickedTool = !clickedTool
             }
