@@ -59,7 +59,7 @@ Rectangle {
                     paintRectangle.color = "lightgray"
                     rectangleRectangle.color = "darkgray"
                     eraserRectangle.color = "lightgray"
-                     paintMenu = false
+                    paintMenu = false
                 }
                 cellItem: "Editing-Rectangle-icon.png"
 

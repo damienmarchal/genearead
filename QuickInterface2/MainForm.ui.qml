@@ -6,39 +6,30 @@ Item {
     id: item1
     width: 640
     height: 480
-    property alias itemPalet: itemPalet
+    property alias image: image
     property alias mouseArea1: mouseArea1
     property alias colorText: colorText
     property alias mouseArea: mouseArea
 
-    property alias image: image
-
-    Image {
-        id: image
-        x: 106
-        y: 72
-        width: 213
-        height: 336
-        source: "Livret F.jpg"
-
-        MouseArea {
-            id: mouseArea1
-            anchors.fill: parent
-        }
-    }
     Text {
         id: colorText
+        x: 0
+        y: 0
+        width: 200
+        height: 30
         //text: qsTr("Surlignez les lignes ! ")
-        text: itemPalet.currentItem
+        anchors.horizontalCenterOffset: 0
         anchors.top: parent.top
-        anchors.topMargin: 10
+        anchors.topMargin: 0
         style: Text.Raised
         font.capitalization: Font.AllUppercase
         font.family: "Arial"
         fontSizeMode: Text.HorizontalFit
         anchors.horizontalCenter: parent.horizontalCenter
-        font.pixelSize: painterPalet.currentSize
-        color: colorPalet.currentColorLeft
+        font.pixelSize: linesTool.currentSize
+        color: linesTool.currentColorLeft
+        text: linesTool.currentItem
+        z: 1
 
         MouseArea {
             id: mouseArea
@@ -57,43 +48,46 @@ Item {
             }
         }
     ]
-    ItemPalet {
-        id: itemPalet
-        x: 532
-        anchors.verticalCenterOffset: -63
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.right: parent.right
-        anchors.rightMargin: 8
-    }
-    ColorPalette {
-        id: colorPalet
-        x: 532
-        y: 42
-    }
 
-    ReturnColor {
-        id: returnColor
-        x: 552
-        y: 378
-        currentColorLeft: colorPalet.currentColorLeft
-        currentColorRight: colorPalet.currentColorRight
-    }
+    SplitView {
+        id: principalSplitView
+        anchors.fill: parent
+        orientation: Qt.Horizontal
 
-    Text {
-        id: returnText
-        x: 532
-        y: 362
-        width: 116
-        height: 20
-        text: qsTr("Couleurs actuelles")
-        font.pointSize: 7
-        renderType: Text.NativeRendering
-    }
+        Image {
+            id: image
+            width: 213
+            height: 336
+            clip: false
+            source: "Livret F.jpg"
+            Layout.fillWidth: true
+            fillMode: Image.PreserveAspectFit
 
-    PainterPalet {
-        id: painterPalet
-        x: 532
-        y: 199
-        visible: itemPalet.paintMenu
+            MouseArea {
+                id: mouseArea1
+                anchors.rightMargin: 0
+                anchors.bottomMargin: 0
+                anchors.leftMargin: 0
+                anchors.topMargin: 0
+                anchors.fill: parent
+            }
+        }
+
+        SplitView {
+            id: toolBarSplitView
+            x: 0
+            anchors.right: parent.right
+            anchors.rightMargin: 0
+
+            orientation: Qt.Vertical
+
+            BackTool {
+                id: backTool
+            }
+
+            LinesTool {
+                id: linesTool
+            }
+        }
     }
 }

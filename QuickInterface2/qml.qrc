@@ -16,5 +16,10 @@
         <file>ColorCell.qml</file>
         <file>PainterPalet.qml</file>
         <file>point.png</file>
+        <file>TitleTool.qml</file>
+        <file>triangleBas.png</file>
+        <file>triangleHaut.png</file>
+        <file>BackTool.qml</file>
+        <file>LinesTool.qml</file>
     </qresource>
 </RCC>
