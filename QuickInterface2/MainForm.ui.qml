@@ -8,8 +8,6 @@ Item {
     height: 480
     property alias principalSplitView: principalSplitView
     property alias toolBarSplitView: toolBarSplitView
-    property alias linesTool: linesTool
-    property alias backTool: backTool
     property alias image: image
     property alias mouseArea1: mouseArea1
     property alias colorText: colorText
@@ -77,24 +75,32 @@ Item {
             }
         }
 
-        Grid {
+        Column {
             id: toolBarSplitView
-            anchors.right: parent.right
-            rows: 2
-            columns: 1
+            width: 400
+            spacing: 10
 
             BackTool {
                 id: backTool
                 height: boxSize
-                //clickedTool : !linesTool.clickedTool
             }
 
             LinesTool {
                 id: linesTool
-                dispo: !backTool.clickedTool
-                //clickedTool : !backTool.clickedTool
-                //enabled : false
+                dispo: !backTool.clickedTool || backTool.validation
             }
         }
+
+        /*LinesTool {
+                    id: linesTool
+                                y:0
+                                            width: 400
+                                                        height: 350
+                                                                    dispo: !backTool.clickedTool || backTool.validation
+                                                                                //clickedTool : !backTool.clickedTool
+                                                                                            //enabled : false
+
+                                                                                                        height: boxSize
+                                                                                                                }*/
     }
 }

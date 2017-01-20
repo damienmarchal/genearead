@@ -4,7 +4,7 @@ import QtQuick.Dialogs 1.2
 
 Item {
     id: container
-    width: 200
+    width: 400
     height: 350
     property bool clickedTool: false
     property color currentColorLeft: colorPalet.currentColorLeft
@@ -19,7 +19,7 @@ Item {
     Rectangle{
         id: item1
         width: 200
-        height: boxSize
+        height: 20
         color: dispo ? "#00000000" : "#626262"
         enabled: dispo
 
@@ -67,8 +67,10 @@ Item {
 
         Item {
             id: linesTool
+            x: 0
+            width: 400
+            height: 350
             visible: clickedTool
-            anchors.horizontalCenter: parent.horizontalCenter
             ColorPalette {
                 id: colorPalet
                 x: -20
@@ -104,16 +106,20 @@ Item {
                 width: 101
                 height: 20
                 text: qsTr("Couleurs actuelles")
+                anchors.right: parent.right
+                anchors.rightMargin: 0
                 font.pointSize: 7
                 renderType: Text.NativeRendering
             }
 
             ReturnColor {
                 id: returnColor
-                x: 20
+                x: 320
                 y: 304
                 width: 60
                 height: 30
+                anchors.right: parent.right
+                anchors.rightMargin: 21
                 currentColorLeft: colorPalet.currentColorLeft
                 currentColorRight: colorPalet.currentColorRight
             }

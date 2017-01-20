@@ -4,11 +4,12 @@ import QtQuick.Dialogs 1.2
 
 Item {
     id: container
-    width: 160
-    height: 60
+    width: 400
+    height: 400
     property bool clickedTool: true
-    property string imageSource : "triangleBas.png"
-    property int boxSize : 60
+    property string imageSource : validation ?  "triangleHaut.png" :"triangleBas.png"
+    property int boxSize : validation ?  20 : 420
+    property bool validation : backAlgoPalet.validation
     /*property bool clickedTool: true
      property string imageSource : "triangleHaut.png"
      property int boxSize : 20*/
@@ -16,7 +17,7 @@ Item {
     Item {
         id: item1
         width: 160
-        height: boxSize
+        height: 20
 
         Text {
             id: title
@@ -49,30 +50,26 @@ Item {
             anchors.fill: parent
             onClicked: {
                 //fleche.source == "triangleHaut.png" ? "triangleBas.png" : "triangleHaut.png"
-                if(clickedTool){
+                if(clickedTool || validation){
                     imageSource = "triangleHaut.png"
                     boxSize = 20
+                    backAlgoPalet.validation = false
                 }
                 else{
                     imageSource = "triangleBas.png"
-                    boxSize = 60
+                    boxSize = 420
                 }
                 clickedTool = !clickedTool
             }
         }
         Item {
             id: backgroundToolBar
-            visible: clickedTool
-            Item {
-                id: backTool
-                width: 160
-                height: 60
+            visible: clickedTool && !validation
 
-                ItemPalet {
-                    id: itemPalet
-                    x: 8
-                    y: 20
-                }
+            BackAlgoPalet {
+                id: backAlgoPalet
+                x: 0
+                y: 21
             }
         }
     }

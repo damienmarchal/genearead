@@ -21,5 +21,10 @@
         <file>triangleHaut.png</file>
         <file>BackTool.qml</file>
         <file>LinesTool.qml</file>
+        <file>BackAlgoPalet.qml</file>
+        <file>flechedroite.png</file>
+        <file>flechegauche.png</file>
+        <file>Livret Lucien.jpg</file>
+        <file>Livret.jpg</file>
     </qresource>
 </RCC>
