@@ -2,23 +2,20 @@
 #define ALGORITHM_H
 
 #include <QObject>
+#include <QImage>
 #include <QDebug>
+
+#include <opencv2/core.hpp>
+
+typedef cv::Point3_<unsigned char> Pixel;
 
 class algorithm : public QObject
 {
     Q_OBJECT
+
 public:
     explicit algorithm(QObject *parent = 0);
-    Q_INVOKABLE QString apply(QObject *image, qint32 code) {
-        switch(code) {
-        case(0) : this->bernsen(image); break;
-        case(1) : this->laab(image); break;
-        case(2) : this->lines(image); break;
-        default : break;
-        }
-        qDebug() << "received : " << code;
-        return QString(code);
-    }
+    Q_INVOKABLE QString apply(QObject *image, qint32 code);
 
 signals:
 

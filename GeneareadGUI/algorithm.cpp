@@ -5,6 +5,19 @@ algorithm::algorithm(QObject *parent) : QObject(parent)
 
 }
 
+
+
+QString algorithm::apply(QObject *image, qint32 code) {
+    switch(code) {
+    case(0) : this->bernsen(image); break;
+    case(1) : this->laab   (image); break;
+    case(2) : this->lines  (image); break;
+    default :                       break;
+    }
+    qDebug() << "received : " << code;
+    return QString(code);
+}
+
 void algorithm::bernsen(QObject *image) {
     /*Mat ret = Mat::zeros(gray.size(),gray.type());
     for(int i=0;i<gray.cols;i++ ) {

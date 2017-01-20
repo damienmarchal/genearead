@@ -1,12 +1,31 @@
 TEMPLATE = app
 
-QT += qml quick
+QT += qml quick widgets
+
 CONFIG += c++11
 
+HEADERS += \
+    algorithm.h \
+    imagemanager.h \
+    interaction.h \
+    imageprovider.h
+
 SOURCES += main.cpp \
-    algorithm.cpp
+    algorithm.cpp \
+    imagemanager.cpp \
+    interaction.cpp \
+    imageprovider.cpp
 
 RESOURCES += qml.qrc
+
+
+# install
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/widgets/imageviewer
+INSTALLS += target
+
+wince {
+   DEPLOYMENT_PLUGIN += qjpeg qgif
+}
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =
@@ -30,5 +49,20 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-HEADERS += \
-    algorithm.h
+DISTFILES +=
+
+
+INCLUDEPATH += "C:/opencv/opencv/modules/core/include"
+INCLUDEPATH += "C:/opencv/opencv/modules/highgui/include"
+INCLUDEPATH += "C:/opencv/opencv/modules/imgcodecs/include"
+INCLUDEPATH += "C:/opencv/opencv/modules/imgproc/include"
+INCLUDEPATH += "C:/opencv/opencv/modules/videoio/include"
+INCLUDEPATH += "C:/opencv/build-opencv-Desktop_Qt_5_8_0_MinGW_32bit-Release"
+INCLUDEPATH += "C:/opencv/build-opencv-Desktop_Qt_5_8_0_MinGW_32bit-Release/include"
+
+LIBS +=-LC:\opencv\build-opencv-Desktop_Qt_5_8_0_MinGW_32bit-Release\bin\
+-llibopencv_core320\
+-llibopencv_highgui320\
+-llibopencv_imgcodecs320\
+-llibopencv_imgproc320\
+-llibopencv_videoio320\

@@ -3,5 +3,6 @@
         <file>main.qml</file>
         <file>MainForm.ui.qml</file>
         <file>Algorithm.qml</file>
+        <file>images/lucien.jpg</file>
     </qresource>
 </RCC>
