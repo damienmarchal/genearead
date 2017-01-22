@@ -1,5 +1,5 @@
-#include "imageprovider.h"
-#include "imagemanager.h"
+#include "imageProvider.h"
+#include "imageManager.h"
 
 ImageProvider::ImageProvider(ImageManager *imageManager)
     : QQuickImageProvider(QQmlImageProviderBase::Image)

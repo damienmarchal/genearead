@@ -17,6 +17,10 @@ ApplicationWindow {
                 //fileDialog.visible = true
             }
             MenuItem {
+                text: qsTr("Fast open")
+                onTriggered: imageManager.loadFile("C:/Users/corentin/Pictures/test.png");
+            }
+            MenuItem {
                 text: qsTr("Close")
                 onTriggered: imageManager.loadFile("C:/Users/corentin/Pictures/gfx/Antolach.PNG");
             }
@@ -35,13 +39,12 @@ ApplicationWindow {
             MenuItem {
                 text: qsTr("Isolate text")
                 shortcut: "Ctrl+T"
-                onTriggered: imageManager.apply("Text")
+                onTriggered: imageManager.apply(windowAlgo)
             }
 
             MenuItem {
                 text: qsTr("Isolate lines")
                 shortcut: "Ctrl+Y"
-                onTriggered: imageManager.apply("Line")
             }
 
             MenuSeparator {}
@@ -49,9 +52,13 @@ ApplicationWindow {
             MenuItem {
                 text: qsTr("Isolate all")
                 shortcut: "Ctrl+U"
-                onTriggered: imageManager.apply("All")
             }
         }
+    }
+
+    Item {
+        id: windowAlgo
+        property string name: "bernsen"
     }
 
     /*MainForm {

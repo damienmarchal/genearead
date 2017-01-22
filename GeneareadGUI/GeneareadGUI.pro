@@ -5,16 +5,22 @@ QT += qml quick widgets
 CONFIG += c++11
 
 HEADERS += \
-    algorithm.h \
-    imagemanager.h \
     interaction.h \
-    imageprovider.h
+    algorithm/bernsen.h \
+    algorithm/algorithm.h \
+    algorithmManager.h \
+    imageManager.h \
+    imageProvider.h \
+    algorithm/threshold.h
 
 SOURCES += main.cpp \
-    algorithm.cpp \
-    imagemanager.cpp \
     interaction.cpp \
-    imageprovider.cpp
+    algorithm/bernsen.cpp \
+    algorithm/algorithm.cpp \
+    algorithmManager.cpp \
+    imageManager.cpp \
+    imageProvider.cpp \
+    algorithm/threshold.cpp
 
 RESOURCES += qml.qrc
 

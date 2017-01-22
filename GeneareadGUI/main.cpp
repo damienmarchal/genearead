@@ -7,9 +7,9 @@
 #include <QQuickView>
 #include <QCommandLineParser>
 
-#include "algorithm.h"
-#include "imagemanager.h"
-#include "imageprovider.h"
+#include "algorithmManager.h"
+#include "imageManager.h"
+#include "imageProvider.h"
 #include "interaction.h"
 
 #include <iostream>
@@ -49,8 +49,8 @@ int start(int argc, char *argv[]) {
 
     QQmlApplicationEngine engine;
 
-    algorithm a;
-    engine.rootContext()->setContextProperty("algor", &a);
+    /*AlgorithmManager a;
+    engine.rootContext()->setContextProperty("algor", &a);*/
 
     ImageManager im;
     engine.rootContext()->setContextProperty("imageManager", &im);

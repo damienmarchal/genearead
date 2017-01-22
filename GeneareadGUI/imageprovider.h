@@ -4,8 +4,8 @@
 #include <QQuickImageProvider>
 #include <QImage>
 
-#include "imageprovider.h"
-#include "imagemanager.h"
+#include "imageProvider.h"
+#include "imageManager.h"
 
 class ImageProvider : public QQuickImageProvider
 {

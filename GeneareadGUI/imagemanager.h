@@ -1,21 +1,19 @@
 #ifndef IMAGEMANAGER_H
 #define IMAGEMANAGER_H
 
+#include <vector>
+
+#include <opencv2/core.hpp>
+
 #include <QObject>
 #include <QImage>
 #include <QDebug>
 
-#include <vector>
-#include <algorithm.h>
-#include <opencv2/core.hpp>
+#include <algorithmManager.h>
 
-using namespace std;
-using namespace cv;
-
-typedef Vec3b RGB;
-typedef Vec4b RGBA;
-typedef Mat Layer;
-typedef vector<Mat> Layers;
+typedef cv::Vec3b RGB;
+typedef cv::Vec4b RGBA;
+typedef std::vector<Layer*> Layers;
 
 class ImageManager : public QObject
 {
@@ -25,7 +23,7 @@ public:
     explicit ImageManager(QObject *parent = 0);
     Q_INVOKABLE void add(QObject *image, QString source);
     Q_INVOKABLE void open();
-    Q_INVOKABLE void apply(QString algorithm);
+    Q_INVOKABLE void apply(QObject* parameters);
 
     Q_INVOKABLE bool loadFile(const QString &);
     bool saveFile(const QString &fileName);
@@ -33,8 +31,9 @@ public:
     int getDefaultImageWidth();
     int getDefaultImageHeight();
     void setImage(QImage image);
+    void setImage(Layer mat);
     QImage getImage();
-    cv::Mat getMainMatrix();
+    Layer getMainMatrix();
     void onImageUpdate();
 
 public slots:
@@ -44,9 +43,12 @@ signals:
 
 protected:
     int count;
-    QImage image;
-    cv::Mat mainMatrix;
+    QImage mainImage;
+    Layer mainMatrix;
+    Layer render;
     Layers layers;
+    AlgorithmManager algorithmManager;
+    double selectionAlpha;
 
 private slots:
     void saveAs();
@@ -57,14 +59,16 @@ private slots:
     void zoomOut();
     void resetLayers();
 
-    Layer RGBALayer();
-    Layer RGBLayer();
-    Layer mainClone();
-    Layer blend();
+    Layer* RGBALayer();
+    Layer* RGBLayer();
+    Layer* mainClone();
+    void blend();
     QImage initialImage();
 
-    cv::Mat imageToMat(QImage* img);
-    QImage matToImage(cv::Mat* mat);
+    void imageToMat(QImage image, Layer* matrix);
+    void matToImage(Layer matrix, QImage* image);
+
+    void updateMatrixes();
 };
 
 #endif // IMAGEMANAGER_H

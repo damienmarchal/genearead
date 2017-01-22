@@ -4,89 +4,230 @@
 #include <QFileDialog>
 #include <QDebug>
 
+#include <iterator>
 #include <cstdlib>
 #include <iostream>
 #include <ctime>
 
-#include "imagemanager.h"
+#include "imageManager.h"
 
-ImageManager::ImageManager(QObject *parent)
-    : QObject(parent)
-{
+ImageManager::ImageManager(QObject *parent) : QObject(parent) {
     count = 0;
-
-    setImage(initialImage());
+    selectionAlpha = 1.0/3.0;
+    selectionAlpha = 1.0/2.0;
+    algorithmManager = AlgorithmManager();
+    layers = Layers();
+    //setImage(initialImage());
+    loadFile("C:/Users/corentin/Pictures/test.png");
 
 
 }
 
 QImage ImageManager::initialImage() {
-    QImage image = QImage(200, 200, QImage::Format_RGB32);
+    QImage init = QImage(200, 200, QImage::Format_RGBA8888);
     QPainter paint;
-    paint.begin(&image);
-    paint.fillRect(QRectF(0, 0, this->image.width(), this->image.height()), QColor(0, 0, 0));
+    paint.begin(&init);
+    paint.fillRect(
+                QRectF(0, 0, init.width(), init.height()),
+                QColor(0, 0, 0)
+                );
     paint.setPen(QColor(255, 255, 255));
     paint.setBrush(QColor(255, 255, 255));
     paint.drawText(QPointF(10, 10), "NO IMAGE");
-    return image;
+    return init;
 }
 
-void ImageManager::resetLayers() {
-    layers = Layers();
-    layers.push_back(RGBLayer());
-}
+void ImageManager::updateMatrixes() {
+    const int rows = mainImage.height();
+    const int cols = mainImage.width();
+    size_t size = mainImage.byteCount();
+    const int step = 24;
+    if(
+            &mainMatrix==NULL ||
+            cols != mainMatrix.cols ||
+            rows != mainMatrix.rows) {
 
-static void fooFill(Layer l) {
-
-    std::srand(std::time(0)); // use current time as seed for random generator
-
-    //RNG rng();
-    //rng.fill(matrix2xN, cv::RNG::NORMAL, mean, sigma);
-    int wasTrue = false;
-    for(unsigned y=0; y<l.rows; ++y) {
-        for(unsigned x=0; x<l.cols; ++x) {
-            if(wasTrue ? std::rand()%2 : 1-std::rand()%2) {
-                wasTrue = true;
-                l.at<RGB>(y, x)[0] = 0;
-                l.at<RGB>(y, x)[1] = 0;
-                l.at<RGB>(y, x)[2] = 255;
-            } else {
-                wasTrue = false;
-            }
-        }
+        mainMatrix = Layer(rows, cols, CV_8UC3, new uchar[size], step);
+        render = Layer(rows, cols, CV_8UC3, new uchar[size], step);
     }
 }
 
-Layer ImageManager::RGBALayer() {
-    return Layer(mainMatrix.rows, mainMatrix.cols, CV_8UC4);
+void ImageManager::resetLayers() {
+    layers.clear();
+    layers.push_back(new Layer(mainMatrix));
 }
 
-Layer ImageManager::RGBLayer() {
-    return Layer(mainMatrix.rows, mainMatrix.cols, CV_8UC3);
+Layer* ImageManager::mainClone() {
+    int size = mainMatrix.total() * mainMatrix.elemSize();
+    uchar data[size];
+    std::memcpy(data, mainMatrix.data, size);
+    Layer* l = new Layer(
+                mainMatrix.rows,
+                mainMatrix.cols,
+                CV_8UC3,
+                data,
+                mainMatrix.step
+                );
+    return l;
 }
 
-Layer ImageManager::mainClone() {
-    return mainMatrix.clone();
+void ImageManager::setImage(Layer mat) {
+
+    mainMatrix = mat;
+    //std::cout << mainMatrix << std::endl;
+    mainImage = QImage(
+                mat.data,
+                mat.cols,
+                mat.rows,
+                static_cast<int>(mat.step),
+                QImage::Format_RGB888
+                );
+    mainImage = mainImage.rgbSwapped();
+    render = mainMatrix.clone();
+    /*uchar* ptr = mainImage.bits();
+        for(int i=0; i<27; ++i) {
+            std::cout << i << " " << (int)(*(ptr+i)) << std::endl;
+        }*/
+
+    qDebug() << "--- initializing layers";
+    resetLayers();
+    qDebug() << "[V] initializing layers";
+
 }
 
+void ImageManager::setImage(QImage image) {
 
-Layer ImageManager::blend() {
-    float alpha = 0.5f;
-    float beta = 1.0f - alpha;
+    qDebug() << "--- new image";
+    mainImage = image.convertToFormat(QImage::Format_RGB888);
+    qDebug() << "[V] new image";
+
+
+    /*uchar* ptr = image.bits();
+    for(int i=0; i<27; ++i) {
+        std::cout << i << " " << (int)(*(ptr+i)) << std::endl;
+    }
+    ptr = mainImage.bits();
+    for(int i=0; i<27; ++i) {
+        std::cout << i << " " << (int)(*(ptr+i)) << std::endl;
+    }*/
+
+    qDebug() << "--- updating matrix";
+    updateMatrixes();
+    qDebug() << "[V] updating matrix";
+
+
+    qDebug() << "--- copying image data into matrix";
+    int size = mainMatrix.total() * mainMatrix.elemSize();
+    std::memcpy(
+                mainMatrix.data,
+                mainImage.bits(),
+                size
+                );
+    qDebug() << "[V] copying image data into matrix";
+
+    std::cout << size << std::endl;
+    std::cout << mainMatrix.total() << std::endl;
+    std::cout << mainMatrix.elemSize() << std::endl;
+    std::cout << mainMatrix.step << std::endl;
+    std::cout << mainMatrix << std::endl;
+
+    //imageToMat(mainImage, &mainMatrix);
+    qDebug() << "--- initializing layers";
+    resetLayers();
+    qDebug() << "[V] initializing layers";
+}
+
+QImage ImageManager::getImage() {
+    return mainImage;
+}
+
+void ImageManager::blend() {
+    float beta = 1.0 - selectionAlpha;
+
     qDebug() << "--- --- cloning matrix";
-    Layer b = RGBLayer();
+    //render = mainClone();
     qDebug() << "--- [V] cloning matrix";
+
     qDebug() << "--- --- layers weighting";
-    addWeighted(mainMatrix, alpha, layers[0], beta, 0.0, b);
+    cv::addWeighted(mainMatrix, selectionAlpha, *layers[0], beta, 0.0, render);
     qDebug() << "--- [V] layers weighting";
+}
+
+void ImageManager::apply(QObject* parameters) {
+    qDebug() << "--- matrix updating";
+    //fooFill(layers[0]);
+    qDebug() << "[V] matrix updating";
+    algorithmManager.binarize(&mainMatrix, layers[0], parameters);
+
+    /*std::cout << mainMatrix << std::endl;
+    std::cout << *layers[0] << std::endl;
+    std::cout << render << std::endl;*/
+
+    qDebug() << "--- layers blending";
+    blend();
+    qDebug() << "[V] layers blending";
+
+
+    qDebug() << "--- copying matrix data into image";
+    int size = render.total() * render.elemSize();
+    std::memcpy(mainImage.bits(), render.data, size);
+    qDebug() << "[V] copying matrix data into image";
+
+    /*std::copy(
+                std::begin(mainImage.bits()),
+                std::end(),
+                std::begin()
+                );*/
+
+    //mainImage = matToImage(l);
+    //std::cout << mainMatrix << std::endl;
+
+    qDebug() << "--- image update";
+    imageUpdate();
+    qDebug() << "[V] image update";
+}
+
+void ImageManager::imageToMat(QImage image, Layer* matrix) {
+    qDebug() << "--- image to matrix";
+    /*Layer* mat = new Layer(
+                image.height(),
+                image.width(),
+                CV_8UC3,
+                image->bits(),
+                image->bytesPerLine()
+                );*/
+    qDebug() << "[V] image to matrix";
+    //return mat;
+}
+
+void ImageManager::matToImage(Layer matrix, QImage* image) {
+    qDebug() << "--- matrix to image";
+    /*QImage image = new QImage(
+                mat->data,
+                mat->cols,
+                mat->rows,
+                static_cast<int>(mat->step),
+                QImage::Format_RGB888
+                );*/
+    qDebug() << "[V] matrix to image";
+    //return image;
+    //return image.rgbSwapped();
+}
+
+Layer* ImageManager::RGBALayer() {
+    return new Layer(mainMatrix.rows, mainMatrix.cols, CV_8UC4);
+}
+
+Layer* ImageManager::RGBLayer() {
+    return new Layer(mainMatrix.rows, mainMatrix.cols, CV_8UC3);
+}
+
+void blendold() {
+
     //cout << b << endl;
-
-
-
 
     //cout << mainMatrix << endl;
     //cout << layers[0] << endl;
-    return b;
     /*int bC = b.channels();
     for(Layer &l : layers) {
         int lC = l.channels();
@@ -113,79 +254,52 @@ Layer ImageManager::blend() {
             }
         }
     }*/
-}
 
-void ImageManager::setImage(QImage image) {
-    qDebug() << "--- new image";
-    //delete this->image;
-    this->image = image.convertToFormat(QImage::Format_RGB888);
-    qDebug() << "[V] new image";
-    //delete mainMatrix;
-    mainMatrix = imageToMat(&(this->image));
-    resetLayers();
-}
-
-QImage ImageManager::getImage() {
-    return this->image;
-}
-
-cv::Mat ImageManager::imageToMat(QImage* img)
-{
-    qDebug() << "--- image to matrix";
-    cv::Mat mat = cv::Mat(
-                img->height(),
-                img->width(),
-                CV_8UC3,
-                img->bits(),
-                img->bytesPerLine()
-                );
-    qDebug() << "[V] image to matrix";
-    return mat;
-}
-
-QImage ImageManager::matToImage(cv::Mat* mat)
-{
-    qDebug() << "--- matrix to image";
-    QImage image = QImage(
-                mat->data,
-                mat->cols,
-                mat->rows,
-                static_cast<int>(mat->step),
-                QImage::Format_RGB888
-                );
-    qDebug() << "[V] matrix to image";
-    return image;
-    //return image.rgbSwapped();
-}
-
-struct Operator {
-    void apply(cv::Point3_<unsigned char> &pixel, int * position) {
-        pixel.x = 255;
-    }
-};
-
-void ImageManager::apply(QString algorithm) {
-    qDebug() << "--- matrix updating";
-    fooFill(layers[0]);
-    qDebug() << "[V] matrix updating";
-    qDebug() << "--- layers blending";
-    Layer l = blend();
-    qDebug() << "[V] layers blending";
-    image = matToImage(&l);
-    imageUpdate();
-
-
-    //mainMatrix.forEach<Pixel>(Operator());
-    //mainMatrix.forEach<cv::Point3_<unsigned char>>(Operator::apply);
-
-
-    /*for(Pixel &p : cv::Mat_<Pixel>(mainMatrix)) {
-        p.x = 255;
-    }*/
 }
 
 void ImageManager::onImageUpdate() {
     qDebug() << "[V] image update";
+}
+
+static void completeFill(Layer l) {
+    for(int y=0; y<l.rows; ++y) {
+        for(int x=0; x<l.cols; ++x) {
+            l.at<RGB>(y, x)[0] = 0;
+            l.at<RGB>(y, x)[1] = 0;
+            l.at<RGB>(y, x)[2] = 255;
+        }
+    }
+}
+
+static void rectFill(Layer l) {
+    for(int y=l.rows/4; y<3*l.rows/4; ++y) {
+        for(int x=l.cols/4; x<3*l.cols/4; ++x) {
+            l.at<RGB>(y, x)[0] = 0;
+            l.at<RGB>(y, x)[1] = 0;
+            l.at<RGB>(y, x)[2] = 255;
+        }
+    }
+}
+
+static void fooFill(Layer l) {
+
+    std::srand(std::time(0)); // use current time as seed for random generator
+
+    //RNG rng();
+    //rng.fill(matrix2xN, cv::RNG::NORMAL, mean, sigma);
+    int wasTrue = false;
+    for(int y=0; y<l.rows; ++y) {
+        for(int x=0; x<l.cols; ++x) {
+            if(wasTrue ? std::rand()%2 : 1-std::rand()%2) {
+                wasTrue = true;
+                l.at<RGB>(y, x)[0] = 0;
+                l.at<RGB>(y, x)[1] = 0;
+                l.at<RGB>(y, x)[2] = 255;
+            } else {
+                wasTrue = false;
+            }
+        }
+    }
 }
 
 
@@ -273,7 +387,7 @@ void ImageManager::saveAs()
 
 bool ImageManager::loadFile(const QString &fileName)
 {
-    QImageReader reader(fileName);
+    /*QImageReader reader(fileName);
     reader.setAutoTransform(true);
 
     const QImage newImage = reader.read();
@@ -281,11 +395,15 @@ bool ImageManager::loadFile(const QString &fileName)
     if (newImage.isNull()) {
         qDebug() << "fail "+ fileName;
         return false;
-    }
+    }*/
+
+    Layer mat = cv::imread(fileName.toStdString(), cv::IMREAD_COLOR);
+
+    //mainMatrix = mat;
 
     qDebug() << "setting "+ fileName;
 
-    setImage(newImage);
+    setImage(mat);
 
     qDebug() << "update to "+ fileName;
 
@@ -302,7 +420,7 @@ bool ImageManager::saveFile(const QString &fileName)
 {
     QImageWriter writer(fileName);
 
-    if (!writer.write(image)) {
+    if (!writer.write(mainImage)) {
         QMessageBox::information(QApplication::activeWindow(), QGuiApplication::applicationDisplayName(),
                                  tr("Cannot write %1: %2")
                                  .arg(QDir::toNativeSeparators(fileName)), writer.errorString());
@@ -321,7 +439,7 @@ void ImageManager::print()
 void ImageManager::copy()
 {
 #ifndef QT_NO_CLIPBOARD
-    QGuiApplication::clipboard()->setImage(image);
+    QGuiApplication::clipboard()->setImage(mainImage);
 #endif // !QT_NO_CLIPBOARD
 }
 
