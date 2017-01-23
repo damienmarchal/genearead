@@ -7,8 +7,8 @@ Item {
     width: 400
     height: 400
     property bool clickedTool: true
-    property string imageSource : validation ?  "triangleHaut.png" :"triangleBas.png"
-    property int boxSize : validation ?  20 : 420
+    property string imageSource : !clickedTool ?  "triangleHaut.png" :"triangleBas.png"
+    property int boxSize :  !clickedTool ?  20 : 420
     property bool validation : backAlgoPalet.validation
     /*property bool clickedTool: true
      property string imageSource : "triangleHaut.png"
@@ -50,21 +50,20 @@ Item {
             anchors.fill: parent
             onClicked: {
                 //fleche.source == "triangleHaut.png" ? "triangleBas.png" : "triangleHaut.png"
-                if(clickedTool || validation){
+                /*if(clickedTool){
                     imageSource = "triangleHaut.png"
                     boxSize = 20
-                    backAlgoPalet.validation = false
                 }
                 else{
                     imageSource = "triangleBas.png"
                     boxSize = 420
-                }
+                }*/
                 clickedTool = !clickedTool
             }
         }
         Item {
             id: backgroundToolBar
-            visible: clickedTool && !validation
+            visible: clickedTool
 
             BackAlgoPalet {
                 id: backAlgoPalet

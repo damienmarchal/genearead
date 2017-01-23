@@ -26,5 +26,6 @@
         <file>flechegauche.png</file>
         <file>Livret Lucien.jpg</file>
         <file>Livret.jpg</file>
+        <file>ImageCanvas.qml</file>
     </qresource>
 </RCC>

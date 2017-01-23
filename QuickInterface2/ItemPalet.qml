@@ -32,7 +32,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 onClicked: {
-                    currentItem = cellItem
+                    currentItem = "pinceau"
                     paintRectangle.color = "darkgray"
                     rectangleRectangle.color = "lightgray"
                     eraserRectangle.color = "lightgray"
@@ -55,7 +55,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 onClicked: {
-                    currentItem = cellItem
+                    currentItem = "rectangle"
                     paintRectangle.color = "lightgray"
                     rectangleRectangle.color = "darkgray"
                     eraserRectangle.color = "lightgray"
@@ -79,7 +79,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 onClicked: {
-                    currentItem = cellItem
+                    currentItem = "gomme"
                     paintRectangle.color = "lightgray"
                     rectangleRectangle.color = "lightgray"
                     eraserRectangle.color = "darkgray"

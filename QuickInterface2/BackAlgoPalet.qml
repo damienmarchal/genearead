@@ -163,7 +163,10 @@ Rectangle {
             text: qsTr("Ok ! ")
             tooltip: "Appliquer l'algorithme"
             anchors.horizontalCenter: parent.horizontalCenter
-            onClicked: validation = true
+            onClicked: {
+                clickedTool = false
+                //validation = true
+            }
         }
     }
 }
