@@ -6,21 +6,32 @@ CONFIG += c++11
 
 HEADERS += \
     interaction.h \
-    algorithm/bernsen.h \
-    algorithm/algorithm.h \
-    algorithmManager.h \
     imageManager.h \
     imageProvider.h \
-    algorithm/threshold.h
+    algorithm/text/sauvola.h \
+    algorithm/text/textAlgorithm.h \
+    algorithm/text/niblack.h \
+    algorithm/text/threshold.h \
+    algorithm/algorithmManager.h \
+    algorithm/line/lineAlgorithm.h \
+    algorithm/text/niblackDerivedAlgorithm.h \
+    algorithm/algorithm.h \
+    algorithm/refine/denoise.h \
+    algorithm/refine/refineAlgorithm.h
 
 SOURCES += main.cpp \
     interaction.cpp \
-    algorithm/bernsen.cpp \
-    algorithm/algorithm.cpp \
-    algorithmManager.cpp \
     imageManager.cpp \
     imageProvider.cpp \
-    algorithm/threshold.cpp
+    algorithm/text/sauvola.cpp \
+    algorithm/text/textAlgorithm.cpp \
+    algorithm/algorithmManager.cpp \
+    algorithm/text/niblack.cpp \
+    algorithm/text/threshold.cpp \
+    algorithm/line/lineAlgorithm.cpp \
+    algorithm/text/niblackDerivedAlgorithm.cpp \
+    algorithm/refine/denoise.cpp \
+    algorithm/refine/refineAlgorithm.cpp
 
 RESOURCES += qml.qrc
 
@@ -63,6 +74,7 @@ INCLUDEPATH += "C:/opencv/opencv/modules/highgui/include"
 INCLUDEPATH += "C:/opencv/opencv/modules/imgcodecs/include"
 INCLUDEPATH += "C:/opencv/opencv/modules/imgproc/include"
 INCLUDEPATH += "C:/opencv/opencv/modules/videoio/include"
+INCLUDEPATH += "C:/opencv/opencv/modules/photo/include"
 INCLUDEPATH += "C:/opencv/build-opencv-Desktop_Qt_5_8_0_MinGW_32bit-Release"
 INCLUDEPATH += "C:/opencv/build-opencv-Desktop_Qt_5_8_0_MinGW_32bit-Release/include"
 
@@ -72,3 +84,4 @@ LIBS +=-LC:\opencv\build-opencv-Desktop_Qt_5_8_0_MinGW_32bit-Release\bin\
 -llibopencv_imgcodecs320\
 -llibopencv_imgproc320\
 -llibopencv_videoio320\
+-llibopencv_photo320\

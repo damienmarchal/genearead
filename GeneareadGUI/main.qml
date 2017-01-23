@@ -39,8 +39,29 @@ ApplicationWindow {
             MenuItem {
                 text: qsTr("Isolate text")
                 shortcut: "Ctrl+T"
-                onTriggered: imageManager.apply(windowAlgo)
+                onTriggered: {
+                    textAlgo.name = "niblack"
+                    imageManager.applyText(textAlgo)
+                }
             }
+
+            MenuItem {
+                text: qsTr("Isolate text - NIBLACK")
+                onTriggered: {
+                    textAlgo.name = "niblack"
+                    imageManager.applyText(textAlgo)
+                }
+            }
+
+            MenuItem {
+                text: qsTr("Isolate text - SAUVOLA")
+                onTriggered: {
+                    textAlgo.name = "sauvola"
+                    imageManager.applyText(textAlgo)
+                }
+            }
+
+            MenuSeparator {}
 
             MenuItem {
                 text: qsTr("Isolate lines")
@@ -54,11 +75,29 @@ ApplicationWindow {
                 shortcut: "Ctrl+U"
             }
         }
+
+        Menu {
+            title: qsTr("Refine")
+
+            MenuItem {
+                text: qsTr("Denoise")
+                onTriggered: {
+                    refineAlgo.name = "denoise"
+                    imageManager.applyRefine(refineAlgo)
+                }
+            }
+        }
     }
 
     Item {
-        id: windowAlgo
-        property string name: "bernsen"
+        id: textAlgo
+        property string name: "niblack"
+        //property string name: "sauvola"
+    }
+
+    Item {
+        id: refineAlgo
+        property string name: "denoise"
     }
 
     /*MainForm {
@@ -69,8 +108,8 @@ ApplicationWindow {
     }*/
 
     Image {
-        x: 200
-        y: 100
+        x: 10
+        y: 10
         id: mainImage
         source: "image://imageProvider/main"
         //width: 200
@@ -93,7 +132,7 @@ ApplicationWindow {
         }
     }
 
-    Rectangle {
+    /*Rectangle {
         id: imageContainer
         visible: true
         objectName: "image"
@@ -102,7 +141,7 @@ ApplicationWindow {
         x: 2
         y: 2
         color: "blue"
-    }
+    }*/
 
     /*FileDialog {
         id: fileDialog

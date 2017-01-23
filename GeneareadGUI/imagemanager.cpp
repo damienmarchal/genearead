@@ -18,7 +18,8 @@ ImageManager::ImageManager(QObject *parent) : QObject(parent) {
     algorithmManager = AlgorithmManager();
     layers = Layers();
     //setImage(initialImage());
-    loadFile("C:/Users/corentin/Pictures/test.png");
+    //loadFile("C:/Users/corentin/Pictures/test.png");
+    loadFile("C:/Users/corentin/Pictures/gfx/Antolach.png");
 
 
 }
@@ -53,6 +54,9 @@ void ImageManager::updateMatrixes() {
 }
 
 void ImageManager::resetLayers() {
+    for (Layers::iterator it = layers.begin() ; it != layers.end(); ++it) {
+        delete(*it);
+    }
     layers.clear();
     layers.push_back(new Layer(mainMatrix));
 }
@@ -153,11 +157,11 @@ void ImageManager::blend() {
     qDebug() << "--- [V] layers weighting";
 }
 
-void ImageManager::apply(QObject* parameters) {
+void ImageManager::applyText(QObject* parameters) {
     qDebug() << "--- matrix updating";
     //fooFill(layers[0]);
     qDebug() << "[V] matrix updating";
-    algorithmManager.binarize(&mainMatrix, layers[0], parameters);
+    algorithmManager.applyText(&mainMatrix, layers[0], parameters);
 
     /*std::cout << mainMatrix << std::endl;
     std::cout << *layers[0] << std::endl;
@@ -182,6 +186,34 @@ void ImageManager::apply(QObject* parameters) {
     //mainImage = matToImage(l);
     //std::cout << mainMatrix << std::endl;
 
+    qDebug() << "--- image update";
+    imageUpdate();
+    qDebug() << "[V] image update";
+}
+
+void ImageManager::applyRefine(QObject* parameters) {
+    algorithmManager.applyRefine(&mainMatrix, layers[0], parameters);
+    qDebug() << "--- layers blending";
+    blend();
+    qDebug() << "[V] layers blending";
+    qDebug() << "--- copying matrix data into image";
+    int size = render.total() * render.elemSize();
+    std::memcpy(mainImage.bits(), render.data, size);
+    qDebug() << "[V] copying matrix data into image";
+    qDebug() << "--- image update";
+    imageUpdate();
+    qDebug() << "[V] image update";
+}
+
+void ImageManager::applyLine(QObject* parameters) {
+    algorithmManager.applyLine(&mainMatrix, layers[0], parameters);
+    qDebug() << "--- layers blending";
+    blend();
+    qDebug() << "[V] layers blending";
+    qDebug() << "--- copying matrix data into image";
+    int size = render.total() * render.elemSize();
+    std::memcpy(mainImage.bits(), render.data, size);
+    qDebug() << "[V] copying matrix data into image";
     qDebug() << "--- image update";
     imageUpdate();
     qDebug() << "[V] image update";

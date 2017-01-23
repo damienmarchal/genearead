@@ -7,7 +7,7 @@
 #include <QQuickView>
 #include <QCommandLineParser>
 
-#include "algorithmManager.h"
+#include "algorithm/algorithmManager.h"
 #include "imageManager.h"
 #include "imageProvider.h"
 #include "interaction.h"
