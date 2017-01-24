@@ -6,6 +6,7 @@ Item {
     id: container
     width: 400
     height: 350
+    property alias painterPalet: painterPalet
     property bool clickedTool: false
     property color currentColorLeft: colorPalet.currentColorLeft
     property color currentColorRight :  colorPalet.currentColorRight

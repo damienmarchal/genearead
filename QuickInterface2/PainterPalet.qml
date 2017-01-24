@@ -8,8 +8,7 @@ Rectangle {
     width: 100; height:90
     color: "lightgray"
     radius: 1
-    property alias paintValue: paintValue
-    property int currentSize : Number.fromLocaleString(paintValue.text)
+    property int currentSize : 5
 
     Grid {
         id: paintNumeric
@@ -29,7 +28,7 @@ Rectangle {
         TextField {
             id: paintValue
             width: 80
-            text: "5"
+            text: currentSize
             placeholderText: qsTr("")
         }
     }
@@ -55,7 +54,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 onClicked: {
-                    paintValue.text = "3"
+                    currentSize = 3
                     smallRectangle.color = "darkgray"
                     mediumRectangle.color = "lightgray"
                     bigRectangle.color = "lightgray"
@@ -77,7 +76,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 onClicked: {
-                    paintValue.text = "9"
+                    currentSize = 9
                     smallRectangle.color = "lightgray"
                     mediumRectangle.color = "darkgray"
                     bigRectangle.color = "lightgray"
@@ -102,7 +101,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 onClicked: {
-                    paintValue.text = "18"
+                    currentSize = 18
                     smallRectangle.color = "lightgray"
                     mediumRectangle.color = "lightgray"
                     bigRectangle.color = "darkgray"
