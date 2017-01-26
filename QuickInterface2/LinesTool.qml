@@ -4,8 +4,10 @@ import QtQuick.Dialogs 1.2
 
 Item {
     id: container
-    width: 400
+    width: 420
     height: 350
+    property alias colorPalet: colorPalet
+    property alias itemPalet: itemPalet
     property alias painterPalet: painterPalet
     property bool clickedTool: false
     property color currentColorLeft: colorPalet.currentColorLeft

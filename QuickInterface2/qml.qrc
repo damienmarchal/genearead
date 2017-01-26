@@ -27,5 +27,6 @@
         <file>Livret Lucien.jpg</file>
         <file>Livret.jpg</file>
         <file>ImageCanvas.qml</file>
+        <file>select.png</file>
     </qresource>
 </RCC>

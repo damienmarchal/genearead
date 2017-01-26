@@ -4,12 +4,12 @@ import QtQuick.Dialogs 1.2
 
 Item {
     id: container
-    width: 400
+    width: 420
     height: 400
     property bool clickedTool: true
     property string imageSource : !clickedTool ?  "triangleHaut.png" :"triangleBas.png"
     property int boxSize :  !clickedTool ?  20 : 420
-    property bool validation : backAlgoPalet.validation
+    property string currentAlgo : backAlgoPalet.currentAlgo
     /*property bool clickedTool: true
      property string imageSource : "triangleHaut.png"
      property int boxSize : 20*/

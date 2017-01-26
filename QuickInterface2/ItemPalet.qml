@@ -6,7 +6,7 @@ import QtQuick.Dialogs 1.2
 
 Rectangle {
     id: page
-    width: 100; height:33
+    width: 140; height:33
     color: "lightgray"
     radius: 1
     property string currentItem
@@ -14,12 +14,36 @@ Rectangle {
 
     Grid {
         id: itemPicker
-        width: 100
+        width: 133
         height: 35
         anchors.fill: parent
         rows: 1
-        columns: 3
+        columns: 4
         spacing: 3
+
+        Rectangle {
+            id: selectRectangle
+            x: 0
+            width: 33
+            height: 33
+            color:  "lightgray"
+
+            ItemCell {
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                onClicked: {
+                    selectRectangle.color = currentItem == "select" ? "lightgray" : "darkgray"
+                    paintRectangle.color = "lightgray"
+                    rectangleRectangle.color = "lightgray"
+                    eraserRectangle.color = "lightgray"
+                    paintMenu = false
+                    currentItem = currentItem =="select" ? "" : "select"
+
+                }
+                cellItem: "select.png"
+
+            }
+        }
         Rectangle {
             id: paintRectangle
             x: 0
@@ -28,15 +52,15 @@ Rectangle {
             color:  "lightgray"
 
             ItemCell {
-                id: itemCell
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 onClicked: {
-                    currentItem = "pinceau"
-                    paintRectangle.color = "darkgray"
+                    paintRectangle.color = currentItem == "pinceau" ? "lightgray" : "darkgray"
                     rectangleRectangle.color = "lightgray"
                     eraserRectangle.color = "lightgray"
-                    paintMenu = true
+                    selectRectangle.color = "lightgray"
+                    paintMenu = currentItem =="pinceau" ? false : true
+                    currentItem = currentItem =="pinceau" ? "" : "pinceau"
 
                 }
                 cellItem: "pinceau.png"
@@ -55,11 +79,12 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 onClicked: {
-                    currentItem = "rectangle"
                     paintRectangle.color = "lightgray"
-                    rectangleRectangle.color = "darkgray"
+                    rectangleRectangle.color = currentItem =="rectangle" ? "lightgray" : "darkgray"
                     eraserRectangle.color = "lightgray"
+                    selectRectangle.color = "lightgray"
                     paintMenu = false
+                    currentItem = currentItem =="rectangle" ? "" : "rectangle"
                 }
                 cellItem: "Editing-Rectangle-icon.png"
 
@@ -79,15 +104,17 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 onClicked: {
-                    currentItem = "gomme"
                     paintRectangle.color = "lightgray"
                     rectangleRectangle.color = "lightgray"
-                    eraserRectangle.color = "darkgray"
-                    paintMenu = true
+                    selectRectangle.color = "lightgray"
+                    eraserRectangle.color = currentItem =="gomme" ? "lightgray" : "darkgray"
+                    paintMenu = currentItem =="gomme" ? false : true
+                    currentItem = currentItem == "gomme" ? "" : "gomme"
                 }
                 cellItem: "gomme.png"
             }
         }
+
 
     }
 }

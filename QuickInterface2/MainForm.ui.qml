@@ -77,7 +77,7 @@ Item {
         }
         Column {
             id: toolBarSplitView
-            width: 400
+            width: 420
             spacing: 10
 
             BackTool {
@@ -87,7 +87,7 @@ Item {
 
             LinesTool {
                 id: linesTool
-                dispo: !backTool.clickedTool
+                dispo: backTool.currentAlgo !=""
             }
         }
 

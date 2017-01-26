@@ -6,10 +6,9 @@ import QtQuick.Dialogs 1.2
 
 Rectangle {
     id: page
-    width: 400; height:400
+    width: 420; height:400
     color: "lightgray"
     radius: 1
-    property alias rectSelect: rectSelect
     property alias rightAlgo: rightAlgo
     property alias rightClick: rightClick
     property alias algo3: algo3
@@ -18,17 +17,16 @@ Rectangle {
     property alias leftClick: leftClick
     property alias leftAlgo: leftAlgo
     property alias algoPicker: algoPicker
-    property string currentAlgo : "Livret Lucien.jpg"
-    property bool validation : false
+    property string currentAlgo
 
     Column {
         id: column
-        width: 400
+        width: 420
         height: 400
 
         Row {
             id: algoPicker
-            width: 400
+            width: 420
             height: 160
             spacing: 10
 
@@ -44,36 +42,20 @@ Rectangle {
                     id: leftClick
                     anchors.fill: parent
                     onClicked: {
-                        algo2.source = algo3.source
-                        algo3.source = algo1.source
-                        algo1.source = currentAlgo
-                        currentAlgo = algo2.source
+                        if(currentAlgo == "algo1"){
+                            currentAlgo  = "algo3"
+                        }
+                        else if (currentAlgo =="algo2"){
+                             currentAlgo  = "algo1"
+                        }
+                        else if (currentAlgo =="algo3"){
+                              currentAlgo  = "algo2"
+                        }
                     }
                 }
             }
-
-            Image {
-                id: algo1
-                width: 100
-                height: 160
-                fillMode: Image.PreserveAspectFit
-                source: "Livret F.jpg"
-
-                MouseArea {
-                    id: algo1Click
-                    anchors.fill: parent
-                    onClicked: {
-                        algo2.source = algo1.source
-                        algo1.source = algo3.source
-                        algo3.source = currentAlgo
-                        currentAlgo = algo2.source
-
-                    }
-                }
-            }
-
             Rectangle {
-                id: rectSelect
+                id: rectSelectAlgo1
                 x: 0
                 width: 110
                 height: 160
@@ -81,7 +63,36 @@ Rectangle {
                 radius: 1
                 z: 2
                 border.width: 60
-                border.color: "#ffffff"
+                border.color: currentAlgo == "algo1" ? "#ffffff" : "#00000000"
+
+                Image {
+                    id: algo1
+                    width: 100
+                    height: 160
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    fillMode: Image.PreserveAspectFit
+                    source: "Livret F.jpg"
+
+                    MouseArea {
+                        id: algo1Click
+                        anchors.fill: parent
+                        onClicked: {
+                            currentAlgo = "algo1"
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                id: rectSelectAlgo2
+                x: 0
+                width: 110
+                height: 160
+                color: "#00000000"
+                radius: 1
+                z: 2
+                border.width: 60
+                border.color: currentAlgo == "algo2" ? "#ffffff" : "#00000000"
 
                 Image {
                     id: algo2
@@ -92,24 +103,39 @@ Rectangle {
                     anchors.horizontalCenter: parent.horizontalCenter
                     fillMode: Image.PreserveAspectFit
                     source: "Livret Lucien.jpg"
+                    MouseArea {
+                        id: algo2Click
+                        anchors.fill: parent
+                        onClicked: {
+                            currentAlgo = "algo2"
+                        }
+                    }
                 }
             }
-
-            Image {
-                id: algo3
-                width: 100
+            Rectangle {
+                id: rectSelectAlgo3
+                x: 0
+                width: 110
                 height: 160
-                fillMode: Image.PreserveAspectFit
-                source: "Livret.jpg"
+                color: "#00000000"
+                radius: 1
+                z: 2
+                border.width: 60
+               border.color: currentAlgo == "algo3" ? "#ffffff" : "#00000000"
+                Image {
+                    id: algo3
+                    width: 100
+                    height: 160
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    fillMode: Image.PreserveAspectFit
+                    source: "Livret.jpg"
 
-                MouseArea {
-                    id: algo2Click
-                    anchors.fill: parent
-                    onClicked:{
-                        algo2.source = algo3.source
-                        algo3.source = algo1.source
-                        algo1.source = currentAlgo
-                        currentAlgo = algo2.source
+                    MouseArea {
+                        id: algo3Click
+                        anchors.fill: parent
+                        onClicked:{
+                            currentAlgo = "algo3"
+                        }
                     }
                 }
             }
@@ -126,11 +152,15 @@ Rectangle {
                     id: rightClick
                     anchors.fill: parent
                     onClicked: {
-                        algo2.source = algo1.source
-                        algo1.source = algo3.source
-                        algo3.source = currentAlgo
-                        currentAlgo = algo2.source
-
+                        if(currentAlgo == "algo1"){
+                            currentAlgo  = "algo2"
+                        }
+                        else if (currentAlgo =="algo2"){
+                             currentAlgo  = "algo3"
+                        }
+                        else if (currentAlgo =="algo3"){
+                              currentAlgo  = "algo1"
+                        }
                     }
                 }
             }
@@ -138,7 +168,7 @@ Rectangle {
 
         Row {
             id: parameters
-            width: 400
+            width: 420
             height: 200
             spacing: 10
 
@@ -147,25 +177,14 @@ Rectangle {
                 stepSize: 0.05
                 value: 0.5
                 orientation: Qt.Vertical
-                visible: false
+                visible: currentAlgo =="algo1"
             }
 
             Slider {
                 id: sliderHorizontal
                 stepSize: 0.05
                 value: 0.5
-                visible: false
-            }
-        }
-
-        Button {
-            id: validationFond
-            text: qsTr("Ok ! ")
-            tooltip: "Appliquer l'algorithme"
-            anchors.horizontalCenter: parent.horizontalCenter
-            onClicked: {
-                clickedTool = false
-                //validation = true
+                visible: currentAlgo =="algo2"
             }
         }
     }

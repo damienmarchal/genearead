@@ -20,6 +20,7 @@ Item {
 
     Image {
         id: image
+        fillMode: Image.PreserveAspectFit
         anchors.fill: parent
     }
 }

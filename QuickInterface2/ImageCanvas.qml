@@ -66,25 +66,65 @@ Item{
             anchors.topMargin: 0
             anchors.fill: parent
             hoverEnabled : true
+            focus: true
             onPositionChanged: {
                 if(containsMouse){
                     mycanvas.requestPaint()
                 }
             }
             onWheel: {
-                if(wheel.angleDelta.y >0){
-                    linesTool.painterPalet.currentSize++
-                }
-                else if((wheel.angleDelta.y<0 && size>=1)){
-                    linesTool.painterPalet.currentSize--
-                }
+                if(item== "pinceau" || item == "gomme"){
+                    if(wheel.angleDelta.y >0){
+                        linesTool.painterPalet.currentSize++
+                    }
+                    else if((wheel.angleDelta.y<0 && size>=1)){
+                        linesTool.painterPalet.currentSize--
+                    }
 
-                mycanvas.requestPaint()
+                    mycanvas.requestPaint()
+                }
             }
             onExited: mycanvas.requestPaint()
-            /*Keys.onLeftPressed: {
-                console.log("coucou")
-            }*/
+
+            Keys.onPressed: {
+                if (event.key === Qt.Key_Control) {
+                    if(item == "gomme"){
+                        linesTool.itemPalet.currentItem = "pinceau"
+                    }
+                    else if (item == "pinceau"){
+                        linesTool.itemPalet.currentItem = "gomme"
+                    }
+                    mycanvas.requestPaint()
+                    event.accepted = true;
+                }
+                else if(event.key === Qt.Key_Alt){
+                    var tmp = Qt.rgba(colorLeft.r, colorLeft.g, colorLeft.b,1)
+                    linesTool.colorPalet.currentColorLeft = linesTool.colorPalet.currentColorRight
+                    linesTool.colorPalet.currentColorRight = tmp
+                    mycanvas.requestPaint()
+                    event.accepted = true;
+                }
+            }
+            Keys.onReleased: {
+                if (event.key === Qt.Key_Control) {
+                    if(item == "gomme"){
+                        linesTool.itemPalet.currentItem = "pinceau"
+                    }
+                    else if (item == "pinceau"){
+                        linesTool.itemPalet.currentItem = "gomme"
+                    }
+                    mycanvas.requestPaint()
+                    event.accepted = true;
+                }
+                else if(event.key === Qt.Key_Alt){
+                    var tmp = Qt.rgba(colorLeft.r, colorLeft.g, colorLeft.b,1)
+                    linesTool.colorPalet.currentColorLeft = linesTool.colorPalet.currentColorRight
+                    linesTool.colorPalet.currentColorRight = tmp
+                    mycanvas.requestPaint()
+                    event.accepted = true;
+                }
+            }
+
         }
 
     }
