@@ -4,6 +4,7 @@ import QtQuick.Controls 1.5
 import QtQuick.Dialogs 1.2
 
 
+
 Rectangle {
     id: page
     width: 420; height:400
@@ -46,10 +47,10 @@ Rectangle {
                             currentAlgo  = "algo3"
                         }
                         else if (currentAlgo =="algo2"){
-                             currentAlgo  = "algo1"
+                            currentAlgo  = "algo1"
                         }
                         else if (currentAlgo =="algo3"){
-                              currentAlgo  = "algo2"
+                            currentAlgo  = "algo2"
                         }
                     }
                 }
@@ -121,7 +122,7 @@ Rectangle {
                 radius: 1
                 z: 2
                 border.width: 60
-               border.color: currentAlgo == "algo3" ? "#ffffff" : "#00000000"
+                border.color: currentAlgo == "algo3" ? "#ffffff" : "#00000000"
                 Image {
                     id: algo3
                     width: 100
@@ -156,38 +157,97 @@ Rectangle {
                             currentAlgo  = "algo2"
                         }
                         else if (currentAlgo =="algo2"){
-                             currentAlgo  = "algo3"
+                            currentAlgo  = "algo3"
                         }
                         else if (currentAlgo =="algo3"){
-                              currentAlgo  = "algo1"
+                            currentAlgo  = "algo1"
                         }
                     }
                 }
             }
         }
-
-        Row {
-            id: parameters
+        Item{
+            id : parameters
             width: 420
-            height: 200
-            spacing: 10
+            height: 240
+            Item{
+            id: algo1parameters
+            width: 420
+            height: 240
 
+            visible: currentAlgo =="algo1"
             Slider {
                 id: sliderVertical
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
                 stepSize: 0.05
                 value: 0.5
                 orientation: Qt.Vertical
-                visible: currentAlgo =="algo1"
+
             }
+        }
+        Item{
+            id: algo2parameters
+            width: 420
+            height: 240
+
+            visible: currentAlgo =="algo2"
 
             Slider {
                 id: sliderHorizontal
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
                 stepSize: 0.05
                 value: 0.5
-                visible: currentAlgo =="algo2"
+
             }
+        }
+        Item{
+            id: algo3parameters
+            width: 420
+            height: 240
+
+            visible: currentAlgo =="algo3"
+
+            Image {
+                property int currentX
+                property int currentY
+                id: graph
+                width: 200
+                height: 200
+                fillMode: Image.PreserveAspectFit
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                source: "plus.png"
+                Canvas {
+                    id: graphCanvas
+                    z: 1
+                    anchors.fill: parent
+                    onPaint : {
+                        var ctx = getContext("2d");
+                        ctx.reset()
+                        ctx.fillStyle = Qt.rgba(255, 0, 0, 1)
+                        ctx.beginPath()
+                        ctx.arc(graph.currentX, graph.currentY, 4, 0, Math.PI*2, true)
+                        ctx.closePath()
+                        ctx.fill()
+                    }
+                    MouseArea{
+                        anchors.fill: parent
+                        onClicked: {
+                            graph.currentX = mouseX
+                            graph.currentY = mouseY
+                            graphCanvas.requestPaint()
+                        }
+                        onPositionChanged: {
+                            graph.currentX = mouseX
+                            graph.currentY = mouseY
+                            graphCanvas.requestPaint()
+                        }
+                    }
+                }
+            }
+}
         }
     }
 }
-
-

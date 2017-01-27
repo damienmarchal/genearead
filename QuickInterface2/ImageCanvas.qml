@@ -46,15 +46,15 @@ Item{
                 ctx.fill()
             }
             else if (mouseArea1.containsMouse && item == "gomme"){
-                ctx.fillStyle = Qt.rgba(colorRight.r, colorRight.g, colorRight.b, 0.5)
+                ctx.strokeStyle = Qt.rgba(0, 0, 0, 0.5)
                 ctx.beginPath()
                 ctx.arc(mouseX, mouseY, size, 0, Math.PI*2, true)
                 ctx.closePath()
-                ctx.fill()
+                ctx.stroke()
             }
             else if (mouseArea1.containsMouse && item == "rectangle"){
                 ctx.fillStyle = Qt.rgba(colorLeft.r, colorLeft.g, colorLeft.b, 0.5)
-                ctx.fillRect(mouseX-size/2, mouseY-size/2,size,size)
+                ctx.fillRect(mouseX-20/2, mouseY-20/2,20,20)
             }
         }
 
