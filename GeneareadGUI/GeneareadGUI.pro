@@ -5,49 +5,46 @@ QT += qml quick widgets
 CONFIG += c++11
 
 HEADERS += \
-    interaction.h \
-    imageManager.h \
-    imageProvider.h \
-    algorithm/text/sauvola.h \
-    algorithm/text/textAlgorithm.h \
-    algorithm/text/niblack.h \
-    algorithm/text/threshold.h \
-    algorithm/algorithmManager.h \
-    algorithm/line/lineAlgorithm.h \
-    algorithm/text/niblackDerivedAlgorithm.h \
-    algorithm/algorithm.h \
-    algorithm/refine/denoise.h \
-    algorithm/refine/refineAlgorithm.h \
-    tool/drawingTool.h \
-    tool/circleTool.h \
-    algorithm/refine/erode.h \
-    algorithm/refine/dilate.h \
-    algorithm/refine/kernelFilter.h \
-    algorithm/refine/blur.h \
-    algorithm/text/adaptativeThreshold.h \
+    header/algorithm/algorithm.h \
+    header/algorithm/algorithmManager.h \
+    header/algorithm/line/lineAlgorithm.h \
+    header/algorithm/refine/blur.h \
+    header/algorithm/refine/denoise.h \
+    header/algorithm/refine/dilate.h \
+    header/algorithm/refine/erode.h \
+    header/algorithm/refine/kernelFilter.h \
+    header/algorithm/refine/refineAlgorithm.h \
+    header/algorithm/text/adaptiveThreshold.h \
+    header/algorithm/text/niblack.h \
+    header/algorithm/text/niblackDerivedAlgorithm.h \
+    header/algorithm/text/sauvola.h \
+    header/algorithm/text/textAlgorithm.h \
+    header/algorithm/text/threshold.h \
+    header/image/imageManager.h \
+    header/image/imageProvider.h \
+    header/tool/circleTool.h \
+    header/tool/drawingTool.h
 
-SOURCES += main.cpp \
-    interaction.cpp \
-    imageManager.cpp \
-    imageProvider.cpp \
-    algorithm/text/sauvola.cpp \
-    algorithm/text/textAlgorithm.cpp \
-    algorithm/algorithmManager.cpp \
-    algorithm/text/niblack.cpp \
-    algorithm/text/threshold.cpp \
-    algorithm/line/lineAlgorithm.cpp \
-    algorithm/text/niblackDerivedAlgorithm.cpp \
-    algorithm/refine/denoise.cpp \
-    algorithm/refine/refineAlgorithm.cpp \
-    tool/drawingTool.cpp \
-    tool/circleTool.cpp \
-    algorithm/refine/erode.cpp \
-    algorithm/refine/dilate.cpp \
-    algorithm/refine/kernelFilter.cpp \
-    algorithm/refine/blur.cpp \
-    algorithm/text/adaptativeThreshold.cpp \
+SOURCES += \
+    src/algorithm/algorithmManager.cpp \
+    src/algorithm/line/lineAlgorithm.cpp \
+    src/algorithm/refine/blur.cpp \
+    src/algorithm/refine/denoise.cpp \
+    src/algorithm/refine/dilate.cpp \
+    src/algorithm/refine/erode.cpp \
+    src/algorithm/refine/kernelFilter.cpp \
+    src/algorithm/text/adaptiveThreshold.cpp \
+    src/algorithm/text/niblack.cpp \
+    src/algorithm/text/niblackDerivedAlgorithm.cpp \
+    src/algorithm/text/sauvola.cpp \
+    src/algorithm/text/textAlgorithm.cpp \
+    src/algorithm/text/threshold.cpp \
+    src/image/imageManager.cpp \
+    src/image/imageProvider.cpp \
+    src/tool/circleTool.cpp \
+    src/main.cpp
 
-RESOURCES += qml.qrc
+RESOURCES += qml/qml.qrc
 
 
 # install
@@ -59,7 +56,7 @@ wince {
 }
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
-QML_IMPORT_PATH =
+QML_IMPORT_PATH = qml
 
 # Additional import path used to resolve QML modules just for Qt Quick Designer
 QML_DESIGNER_IMPORT_PATH =

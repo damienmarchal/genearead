@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>MainForm.ui.qml</file>
+        <file>Algorithm.qml</file>
+        <file>GeneaImage.qml</file>
+        <file>AlgorithmParameters.qml</file>
+    </qresource>
+</RCC>
