@@ -5,8 +5,8 @@ import QtQuick.Dialogs 1.2
 
 ApplicationWindow {
     visible: true
-    width: 640
-    height: 480
+    width: 1200
+    height: 900
     title: qsTr("Hello World")
 
     menuBar: MenuBar {
@@ -33,19 +33,6 @@ ApplicationWindow {
 
     MainForm {
         anchors.fill: parent
-
-        /*Text {
-            id: colorText
-            text: qsTr("Surlignez les lignes ! ")
-            style: Text.Raised
-            font.capitalization: Font.AllUppercase
-            font.family: "Arial"
-            fontSizeMode: Text.HorizontalFit
-            anchors.horizontalCenter: parent.horizontalCenter
-            font.pixelSize: 25
-            color: colorPalet.currentColor
-
-        }*/
     }
 
     MessageDialog {
