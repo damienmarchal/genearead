@@ -15,6 +15,8 @@ public:
     virtual void apply(Layer* in, Layer* out, Layer* mask) = 0;
     virtual void setParameters(QObject* parameters) = 0;
 
+    void applyMask(Layer* in, Layer* out, Layer* mask);
+
 };
 
 #endif // TEXTALGORITHM_H

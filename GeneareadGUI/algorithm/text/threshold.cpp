@@ -1,6 +1,8 @@
 #include "threshold.h"
 
 Threshold::Threshold()
+    : T(127)
+    , thresholdType(cv::THRESH_BINARY)
 {
 
 }
@@ -10,19 +12,20 @@ QString Threshold::getName() {
 }
 
 void Threshold::setParameters(QObject* parameters) {
+    QVariant v;
+
+    if(!(v = parameters->property("T")).isNull()) {
+        T = v.toInt();
+    }
+
+    if(!(v = parameters->property("inv")).isNull()) {
+        thresholdType = v.toBool() ? cv::THRESH_BINARY_INV : cv::THRESH_BINARY;
+    }
 
 }
 
 void Threshold::apply(Layer* in, Layer* out, Layer* mask) {
-    uchar p;
-    for(int i=0; i<in->cols; i++) {
-        for(int j=0; j<in->rows; j++) {
-            p = in->at<uchar>(j, i);
-            if(p>128)
-                out->at<uchar>(j, i) = 255;
-            else
-                out->at<uchar>(j, i) = 0;
-        }
-    }
+    cv::threshold(*in, *out, T, 255, thresholdType);
+    applyMask(in, out, mask);
 }
 

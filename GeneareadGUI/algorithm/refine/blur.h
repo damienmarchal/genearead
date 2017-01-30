@@ -1,19 +1,18 @@
-#ifndef DENOISE_H
-#define DENOISE_H
+#ifndef BLUR_H
+#define BLUR_H
 
 #include "refineAlgorithm.h"
 
-class Denoise : public RefineAlgorithm {
+class Blur : public RefineAlgorithm {
 
 public:
-    Denoise();
+    Blur();
     virtual QString getName();
     virtual void apply(Layer* in, Layer* out, Layer* mask);
     virtual void setParameters(QObject* parameters);
 
 protected:
-    float h;
-
+    int ksize;
 };
 
-#endif // DENOISE_H
+#endif // BLUR_H

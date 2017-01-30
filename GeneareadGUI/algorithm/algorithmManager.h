@@ -41,6 +41,11 @@ public:
     void RGBToGray(Layer* RGBMatrix, Layer* GrayMatrix);
     void GrayToRGB(Layer* GrayMatrix, Layer* RGBMatrix);
 
+    LineAlgorithms getLineAlgorithms();
+    TextAlgorithms getTextAlgorithms();
+    RefineAlgorithms getRefineAlgorithms();
+
+
 signals:
 
 public slots:

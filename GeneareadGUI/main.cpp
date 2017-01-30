@@ -47,18 +47,20 @@ void cvTest2() {
 int start(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    QQmlApplicationEngine engine;
+    QQmlApplicationEngine* engine = new QQmlApplicationEngine();
 
     /*AlgorithmManager a;
     engine.rootContext()->setContextProperty("algor", &a);*/
 
-    ImageManager im;
-    engine.rootContext()->setContextProperty("imageManager", &im);
 
-    ImageProvider ip = ImageProvider(&im);
-    engine.addImageProvider("imageProvider", &ip);
+    ImageManager* im = new ImageManager(engine);
+    engine->rootContext()->setContextProperty("imageManager", im);
 
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    ImageProvider* ip = new ImageProvider(im);
+    engine->addImageProvider("imageProvider", ip);
+
+    engine->load(QUrl(QStringLiteral("qrc:/main.qml")));
+
 
     QGuiApplication::setApplicationDisplayName(QObject::tr("Genearead"));
 

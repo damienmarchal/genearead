@@ -1,20 +1,36 @@
 #include "algorithmManager.h"
+
+#include "text/adaptativeThreshold.h"
 #include "text/niblack.h"
 #include "text/sauvola.h"
+#include "text/threshold.h"
+
+#include "refine/blur.h"
 #include "refine/denoise.h"
+#include "refine/dilate.h"
+#include "refine/erode.h"
 
 #include <iostream>
 
 AlgorithmManager::AlgorithmManager() {
     textAlgorithms = TextAlgorithms();
+    textAlgorithms.push_back(new AdaptiveThreshold());
     textAlgorithms.push_back(new Niblack());
     textAlgorithms.push_back(new Sauvola());
+    textAlgorithms.push_back(new Threshold());
 
     lineAlgorithms = LineAlgorithms();
 
     refineAlgorithms = RefineAlgorithms();
+    refineAlgorithms.push_back(new Blur());
     refineAlgorithms.push_back(new Denoise());
+    refineAlgorithms.push_back(new Dilate());
+    refineAlgorithms.push_back(new Erode());
 }
+
+LineAlgorithms AlgorithmManager::getLineAlgorithms() {return lineAlgorithms;}
+TextAlgorithms AlgorithmManager::getTextAlgorithms() {return textAlgorithms;}
+RefineAlgorithms AlgorithmManager::getRefineAlgorithms() {return refineAlgorithms;}
 
 void AlgorithmManager::updateGrayLayer(Layer* RGBMatrix) {
     const int rows = RGBMatrix->rows;
@@ -74,9 +90,9 @@ RefineAlgorithm* AlgorithmManager::getRefineAlgorithm(QString name) {
 void AlgorithmManager::applyText(Layer* RGBMatrix, Layer* mask, QObject* parameters) {
 
     qDebug() << "--- applying binary";
-    qDebug() << "--- --- reading algorithm name";
+    qDebug() << "--- --- reading algorithm name" << parameters;
     QVariant v;
-    if((v = parameters->property("name")).isNull())
+    if((v = parameters->property("objectName")).isNull())
         return;
     qDebug() << "--- [V] reading algorithm name";
 

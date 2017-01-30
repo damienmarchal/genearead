@@ -21,8 +21,5 @@ void Denoise::setParameters(QObject* parameters) {
 }
 
 void Denoise::apply(Layer* in, Layer* out, Layer* mask) {
-    qDebug() << "DENOISE" << h;
-    std::cout << *out << std::endl;
     cv::fastNlMeansDenoising(*in, *out, 10, 7, 21);
-    std::cout << *out << std::endl;
 }

@@ -2,7 +2,6 @@
 #define ALGORITHM_H
 
 #include <opencv2/core.hpp>
-
 #include <iostream>
 
 typedef unsigned char uc;

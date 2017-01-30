@@ -1,22 +1,24 @@
-#ifndef THRESHOLD_H
-#define THRESHOLD_H
+#ifndef ADAPTIVETHRESHOLD_H
+#define ADAPTIVETHRESHOLD_H
 
 #include "textAlgorithm.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 
-class Threshold : public TextAlgorithm {
+class AdaptiveThreshold : public TextAlgorithm {
 
 public:
-    Threshold();
+    AdaptiveThreshold();
     virtual QString getName();
     virtual void apply(Layer* in, Layer* out, Layer* mask);
     virtual void setParameters(QObject* parameters);
 
 protected:
-    int T;
+    int w;
+    int C;
     cv::ThresholdTypes thresholdType;
+    cv::AdaptiveThresholdTypes adaptiveMethod;
 
 };
 
-#endif // THRESHOLD_H
+#endif // ADAPTIVETHRESHOLD_H

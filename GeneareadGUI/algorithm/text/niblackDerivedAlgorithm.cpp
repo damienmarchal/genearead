@@ -113,13 +113,21 @@ void NiblackDerivedAlgorithm::apply(Layer* in, Layer* out, Layer* mask) {
                     thsurf.at<float>(u, i) = th;
     }
 
+    cv::Vec3b vec;
     for	(int y=0; y<in->rows; ++y) {
         //std::cout << y << std::endl;
         for	(int x=0; x<in->cols; ++x) {
-            if (in->at<uc>(y, x) >= thsurf.at<float>(y, x)) {
-                out->at<uc>(y, x) = 255;
+
+            vec = mask->at<cv::Vec3b>(y, x);
+            if(vec[0] || vec[1] || vec[2]) {
+            //if(true) {
+                if (in->at<uc>(y, x) >= thsurf.at<float>(y, x)) {
+                    out->at<uc>(y, x) = 255;
+                } else {
+                    out->at<uc>(y, x) = 0;
+                }
             } else {
-                out->at<uc>(y, x) = 0;
+                out->at<uc>(y, x) = in->at<uc>(y, x);
             }
         }
     }

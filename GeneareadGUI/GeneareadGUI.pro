@@ -17,7 +17,14 @@ HEADERS += \
     algorithm/text/niblackDerivedAlgorithm.h \
     algorithm/algorithm.h \
     algorithm/refine/denoise.h \
-    algorithm/refine/refineAlgorithm.h
+    algorithm/refine/refineAlgorithm.h \
+    tool/drawingTool.h \
+    tool/circleTool.h \
+    algorithm/refine/erode.h \
+    algorithm/refine/dilate.h \
+    algorithm/refine/kernelFilter.h \
+    algorithm/refine/blur.h \
+    algorithm/text/adaptativeThreshold.h \
 
 SOURCES += main.cpp \
     interaction.cpp \
@@ -31,7 +38,14 @@ SOURCES += main.cpp \
     algorithm/line/lineAlgorithm.cpp \
     algorithm/text/niblackDerivedAlgorithm.cpp \
     algorithm/refine/denoise.cpp \
-    algorithm/refine/refineAlgorithm.cpp
+    algorithm/refine/refineAlgorithm.cpp \
+    tool/drawingTool.cpp \
+    tool/circleTool.cpp \
+    algorithm/refine/erode.cpp \
+    algorithm/refine/dilate.cpp \
+    algorithm/refine/kernelFilter.cpp \
+    algorithm/refine/blur.cpp \
+    algorithm/text/adaptativeThreshold.cpp \
 
 RESOURCES += qml.qrc
 
