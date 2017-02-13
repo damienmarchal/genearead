@@ -6,6 +6,11 @@
 
 #include "imageManager.h"
 
+/**
+ * @brief The ImageProvider class provides QImage objects from an ImageManager.
+ * The requested id of method requestImage determines the content of the QImage.
+ * Is used for the main ImageManager workspace image and for its previews.
+ */
 class ImageProvider : public QQuickImageProvider
 {
 

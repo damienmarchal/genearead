@@ -3,6 +3,11 @@
 
 #include "refineAlgorithm.h"
 
+/**
+ * @brief The Blur class is a RefineAlgorithm that reduces noise on a layer
+ * This class uses the cv::fastNlMeansDenoising implementation.
+ * See documentation for cv::fastNlMeansDenoising for informations about any class fields of this class.
+ */
 class Denoise : public RefineAlgorithm {
 
 public:

@@ -3,6 +3,11 @@
 
 #include "refineAlgorithm.h"
 
+/**
+ * @brief The KernelFilter class is a RefineAlgorithm that acts as a kernel filter on a Layer.
+ * This class uses the cv::filter2D implementation.
+ * See documentation for cv::filter2D for informations about any class fields of this class.
+ */
 class KernelFilter : public RefineAlgorithm {
 
 public:

@@ -3,6 +3,11 @@
 
 #include "refineAlgorithm.h"
 
+/**
+ * @brief The Blur class is a RefineAlgorithm that hads a blur effect on a layer
+ * This class uses the cv::medianBlur implementation.
+ * See documentation for cv::medianBlur for informations about any class fields of this class.
+ */
 class Blur : public RefineAlgorithm {
 
 public:

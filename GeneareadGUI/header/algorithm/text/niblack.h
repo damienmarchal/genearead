@@ -3,6 +3,9 @@
 
 #include "niblackDerivedAlgorithm.h"
 
+/**
+ * @brief The Niblack class is a TextAlgorithm. The default Niblack algorithm implementation.
+ */
 class Niblack : public NiblackDerivedAlgorithm {
 
 public:

@@ -56,11 +56,8 @@ void AlgorithmManager::GrayToRGB(Layer* grayMatrix, Layer* RGBMatrix) {
 
 TextAlgorithm* AlgorithmManager::getTextAlgorithm(QString name) {
     TextAlgorithm* a;
-    qDebug() << "!   searching through" << textAlgorithms.size() << "algorithm(s)";
     for(unsigned i=0; i<textAlgorithms.size(); ++i) {
-        qDebug() << " -> testing number" << i;
         a = textAlgorithms[i];
-        qDebug() << "    looking for" << name << ". Got" << a->getName();
         if(a->getName() == name)
             return a;
     }
@@ -88,138 +85,33 @@ RefineAlgorithm* AlgorithmManager::getRefineAlgorithm(QString name) {
 }
 
 void AlgorithmManager::applyText(Layer* RGBMatrix, Layer* mask, QObject* parameters) {
-
-    qDebug() << "--- applying binary";
-    qDebug() << "--- --- reading algorithm name" << parameters;
     QVariant v;
-    if((v = parameters->property("objectName")).isNull())
+    if((v = parameters->property("textAlgoName")).isNull())
         return;
-    qDebug() << "--- [V] reading algorithm name";
-
-    const QString name = v.toString();
-    qDebug() << "--- --- fetching algorithm :" << name;
-    TextAlgorithm* algo = getTextAlgorithm(name);
-    if(algo == NULL) {
-        qDebug() << "--- --- <X> fetching algorithm :" << name;
+    TextAlgorithm* algo = getTextAlgorithm(v.toString());
+    if(algo == NULL)
         return;
-    }
-    qDebug() << "--- [V] fetching algorithm :" << name;
-
-    qDebug() << "--- --- setting parameters";
     algo->setParameters(parameters);
-    qDebug() << "--- [V] setting parameters";
-
-    qDebug() << "--- --- update gray buffers";
     updateGrayLayer(RGBMatrix);
-    qDebug() << "--- [V] update gray buffers";
-
-
-    qDebug() << "--- --- converting RGB to Gray";
     RGBToGray(RGBMatrix, &grayInMatrix);
-    qDebug() << "--- [V] converting RGB to Gray";
-
-
-    qDebug() << "--- --- binarizing";
     algo->apply(&grayInMatrix, &grayOutMatrix, mask);
-    qDebug() << "--- [V] binarizing";
-
-    qDebug() << "--- --- converting Gray to RGB";
     GrayToRGB(&grayOutMatrix, RGBMatrix);
-    qDebug() << "--- [V] converting Gray to RGB";
-
-    qDebug() << "[V] applying binary";
 }
 
 void AlgorithmManager::applyRefine(Layer* RGBMatrix, Layer* mask, QObject* parameters) {
-
-    qDebug() << "--- applying refining";
-    qDebug() << "--- --- reading algorithm name";
     QVariant v;
-    if((v = parameters->property("name")).isNull())
+    if((v = parameters->property("refineAlgoName")).isNull())
         return;
-    qDebug() << "--- [V] reading algorithm name";
-
-    const QString name = v.toString();
-    qDebug() << "--- --- fetching algorithm :" << name;
-    RefineAlgorithm* algo = getRefineAlgorithm(name);
-    if(algo == NULL) {
-        qDebug() << "--- --- <X> fetching algorithm :" << name;
+    RefineAlgorithm* algo = getRefineAlgorithm(v.toString());
+    if(algo == NULL)
         return;
-    }
-    qDebug() << "--- [V] fetching algorithm :" << name;
-
-    qDebug() << "--- --- setting parameters";
     algo->setParameters(parameters);
-    qDebug() << "--- [V] setting parameters";
-
-    qDebug() << "--- --- update gray buffers";
     updateGrayLayer(RGBMatrix);
-    qDebug() << "--- [V] update gray buffers";
-
-
-    qDebug() << "--- --- converting RGB to Gray";
     RGBToGray(RGBMatrix, &grayInMatrix);
-    qDebug() << "--- [V] converting RGB to Gray";
-
-
-    qDebug() << "--- --- binarizing";
     algo->apply(&grayInMatrix, &grayOutMatrix, mask);
-    qDebug() << "--- [V] binarizing";
-
-    qDebug() << "--- --- converting Gray to RGB";
     GrayToRGB(&grayOutMatrix, RGBMatrix);
-    qDebug() << "--- [V] converting Gray to RGB";
-
-    qDebug() << "[V] applying binary";
 }
 
 void AlgorithmManager::applyLine(Layer* RGBMatrix, Layer* mask, QObject* parameters) {
 
 }
-
-Layer* AlgorithmManager::bernsen(Layer* image) {
-    Layer ret = Layer::zeros(image->size(),image->type());
-    return &ret;
-}
-
-Layer* AlgorithmManager::laab(Layer *image) {
-    //image->setProperty("color", "green");
-    return image;
-}
-
-Layer* AlgorithmManager::lines(Layer *image) {
-    //image->setProperty("color", "black");
-    return image;
-}
-
-
-
-/**************************************************************
- * Binarization with several methods
- * (0) Niblacks method
- * (1) Sauvola & Co.
- *     ICDAR 1997, pp 147-152
- * (2) by myself - Christian Wolf
- *     Research notebook 19.4.2001, page 129
- * (3) by myself - Christian Wolf
- *     20.4.2007
- *
- * See also:
- * Research notebook 24.4.2001, page 132 (Calculation of s)
- **************************************************************/
-
-/*
-
-            case NIBLACK:
-                th = m + k*s;
-                break;
-
-            case SAUVOLA:
-                th = m * (1 + k*(s/dR-1));
-                break;
-
-            case WOLFJOLION:
-                th = m + k * (s/max_s-1) * (m-min_I);
-                break;
-
-*/

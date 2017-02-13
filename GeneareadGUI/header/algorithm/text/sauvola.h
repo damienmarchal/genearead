@@ -13,7 +13,7 @@ public:
 
 protected:
     double k;
-    double R;
+    double r;
 
 };
 

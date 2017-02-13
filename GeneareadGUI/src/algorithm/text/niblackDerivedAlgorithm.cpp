@@ -9,10 +9,6 @@ NiblackDerivedAlgorithm::NiblackDerivedAlgorithm()
 }
 
 void NiblackDerivedAlgorithm::apply(Layer* in, Layer* out, Layer* mask) {
-
-    qDebug() << "apply niblack";
-    qDebug() << winx << winy;
-
     double m, s, max_s;
     double th=0;
     double min_I, max_I;
@@ -46,20 +42,6 @@ void NiblackDerivedAlgorithm::apply(Layer* in, Layer* out, Layer* mask) {
 
             // Calculate the threshold
             th = threshold(m, s, min_I, max_I, max_s);
-            /*switch (version) {
-            case NIBLACK:
-                th = m + k*s;
-                break;
-            case SAUVOLA:
-                th = m * (1 + k*(s/dR-1));
-                break;
-            case WOLFJOLION:
-                th = m + k * (s/max_s-1) * (m-min_I);
-                break;
-            default:
-                cerr << "Unknown threshold type in ImageThresholder::surfaceNiblackImproved()\n";
-                exit (1);
-            }*/
 
             thsurf.at<float>(j, i+wxh) = th;
 
@@ -111,12 +93,10 @@ void NiblackDerivedAlgorithm::apply(Layer* in, Layer* out, Layer* mask) {
 
     cv::Vec3b vec;
     for	(int y=0; y<in->rows; ++y) {
-        //std::cout << y << std::endl;
         for	(int x=0; x<in->cols; ++x) {
 
             vec = mask->at<cv::Vec3b>(y, x);
             if(vec[0] || vec[1] || vec[2]) {
-            //if(true) {
                 if (in->at<uc>(y, x) >= thsurf.at<float>(y, x)) {
                     out->at<uc>(y, x) = 255;
                 } else {
@@ -127,9 +107,6 @@ void NiblackDerivedAlgorithm::apply(Layer* in, Layer* out, Layer* mask) {
             }
         }
     }
-
-    qDebug() << "ok here";
-    //std::cout << *out << std::endl;
 
 }
 

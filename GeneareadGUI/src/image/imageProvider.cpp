@@ -9,10 +9,16 @@ ImageProvider::ImageProvider(ImageManager *imageManager)
     this->imageManager = imageManager;
 }
 
-QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize) {
+QImage ImageProvider::requestImage(const QString &id, QSize*, const QSize&) {
 
     if(id == "main") {
-        qDebug() << "main refresh ";
+        //qDebug() << "main refresh";
+        return imageManager->getImage();
+    }
+
+    QString lineIndex = "lineIndex";
+    if(id.startsWith(lineIndex)) {
+        //qDebug() << "lineIndex";
         return imageManager->getImage();
     }
 
@@ -23,7 +29,7 @@ QImage ImageProvider::requestImage(const QString &id, QSize *size, const QSize &
         int n = allSize - position;
 
         int previewID = id.mid(position, n).toInt();
-        qDebug() << "preview refresh" << previewID;
+        //qDebug() << "preview refresh" << previewID;
         return imageManager->getPreview(previewID);
     }
 

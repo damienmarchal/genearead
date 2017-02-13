@@ -14,7 +14,7 @@ public:
     virtual void setParameters(QObject* parameters);
 
 protected:
-    int T;
+    int t;
     cv::ThresholdTypes thresholdType;
 
 };

@@ -8,8 +8,12 @@
 #include <QCommandLineParser>
 
 #include <header/algorithm/algorithmManager.h>
+#include <header/io/projectReader.h>
+#include <header/io/projectWriter.h>
 #include <header/image/imageManager.h>
 #include <header/image/imageProvider.h>
+
+#include <header/io/project.h>
 
 #include <iostream>
 #include <opencv2/core.hpp>
@@ -25,31 +29,45 @@ void cvTest1() {
 
 void cvTest2() {
     Mat mat;
-    mat = imread("C:/Users/corentin/Pictures/gfx/Antolach.PNG");
+    mat = imread("foo");
     namedWindow("hello", WINDOW_AUTOSIZE);
     imshow("hello", mat);
 
     waitKey(0);
 
-    //cout << "Hello World!" << endl;
-
-    //QQmlComponent component(&engine,
-    //        QUrl::fromLocalFile("MyItem.qml"));
-    //QObject *window = component.create();
-    //QObject *image = window-> findChild<QObject*>("image");
-    //*image->setProperty("color")
-
-    //qmlRegisterType<algorithm>("QMLObjects", 1, 0, "algorithm");
 
 }
+
+void cvTest3() {
+
+    Layer mat = imread("foo");
+    int width = mat.cols;
+    int height = mat.rows;
+
+    Layer l = Layer(height, width, CV_8UC1);
+    cv::cvtColor(mat, l, CV_RGB2GRAY);
+    Layer l2 = Layer(height, width, CV_16U);
+    int n = cv::connectedComponents(l, l2, 4, CV_16U);
+
+    ushort* prt = l2.ptr<ushort>();
+    assert(l2.isContinuous());
+
+    for(int i=0; i<width*height; ++i) {
+        prt[i] = (prt[i] * (0xFFFF/(n-1)));
+    }
+
+    cv::namedWindow("hello", WINDOW_AUTOSIZE);
+    cv::imshow("hello", l2);
+    std::cout << l2 << std::endl;
+
+    cv::waitKey(0);
+}
+
 
 int start(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     QQmlApplicationEngine* engine = new QQmlApplicationEngine();
-
-    /*AlgorithmManager a;
-    engine.rootContext()->setContextProperty("algor", &a);*/
 
 
     ImageManager* im = new ImageManager(engine);
@@ -58,15 +76,25 @@ int start(int argc, char *argv[]) {
     ImageProvider* ip = new ImageProvider(im);
     engine->addImageProvider("imageProvider", ip);
 
+    PROJECT = new Project(
+                engine,
+                new ProjectReader(),
+                new ProjectWriter(),
+                im
+                );
+
+    engine->rootContext()->setContextProperty("project", PROJECT);
+
     engine->load(QUrl(QStringLiteral("qrc:/main.qml")));
 
-
-    QGuiApplication::setApplicationDisplayName(QObject::tr("Genearead"));
+    im->init();
 
     QCommandLineParser commandLineParser;
     commandLineParser.addHelpOption();
     commandLineParser.addPositionalArgument(QObject::tr("[file]"), QObject::tr("Image file to open."));
     commandLineParser.process(QCoreApplication::arguments());
+
+    //PROJECT->close();
 
     return app.exec();
 }
@@ -74,69 +102,5 @@ int start(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
 
     return start(argc, argv);
-
-    //return start(argc, *argv[]);
-
-    /*Interaction interaction;
-    if (!commandLineParser.positionalArguments().isEmpty()
-        && !interaction.loadFile(commandLineParser.positionalArguments().front())) {
-        return -1;
-    }*/
-    //interaction.show();
 }
 
-/*void createLanguageMenu()
-{
-    QActionGroup* langGroup = new QActionGroup(ui.menuLanguage);
-    langGroup->setExclusive(true);
-
-    connect(langGroup, SIGNAL (triggered(QAction *)), this, SLOT (slotLanguageChanged(QAction *)));
-
-    // format systems language
-    QString defaultLocale = QLocale::system().name(); // e.g. "de_DE"
-    defaultLocale.truncate(defaultLocale.lastIndexOf('_')); // e.g. "de"
-
-    m_langPath = QApplication::applicationDirPath();
-    m_langPath.append("/languages");
-    QDir dir(m_langPath);
-    QStringList fileNames = dir.entryList(QStringList("TranslationExample_*.qm"));
-
-    for (int i = 0; i < fileNames.size(); ++i) {
-        // get locale extracted by filename
-        QString locale;
-        locale = fileNames[i]; // "TranslationExample_de.qm"
-        locale.truncate(locale.lastIndexOf('.')); // "TranslationExample_de"
-        locale.remove(0, locale.indexOf('_') + 1); // "de"
-
-        QString lang = QLocale::languageToString(QLocale(locale).language());
-        QIcon ico(QString("%1/%2.png").arg(m_langPath).arg(locale));
-
-        QAction *action = new QAction(ico, lang, this);
-        action->setCheckable(true);
-        action->setData(locale);
-
-        ui.menuLanguage->addAction(action);
-        langGroup->addAction(action);
-
-        // set default translators and language checked
-        if (defaultLocale == locale)
-        {
-            action->setChecked(true);
-        }
-    }
-}*/
-
-/*void call() {
-    QQmlEngine engine;
-    QQmlComponent component(&engine, "Algorithm.qml");
-    QObject *object = component.create();
-
-    QVariant returnedValue;
-    QVariant msg = "Hello from C++";
-    QMetaObject::invokeMethod(object, "call",
-                              Q_RETURN_ARG(QVariant, returnedValue),
-                              Q_ARG(QVariant, msg));
-
-    qDebug() << "QML function returned:" << returnedValue.toString();
-    delete object;
-}*/

@@ -20,7 +20,7 @@ void Erode::setParameters(QObject* parameters) {
     QVariant v;
 
     if(!(v = parameters->property("iterations")).isNull())
-        iterations = v.toInt();
+        iterations = std::round(v.toFloat()*2.0f)+1;
 
     if(!(v = parameters->property("borderType")).isNull())
         borderType = v.toInt();

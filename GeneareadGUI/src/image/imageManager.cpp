@@ -12,22 +12,40 @@
 #include <QColor>
 
 #include <header/image/imageManager.h>
+
+#include <header/tool/noTool.h>
+#include <header/tool/selectTool.h>
 #include <header/tool/circleTool.h>
+#include <header/tool/rectangleTool.h>
+#include <header/tool/eraserCircleTool.h>
+#include <header/tool/whiteOutCircleTool.h>
 
 ImageManager::ImageManager(QQmlApplicationEngine* engine)
     : QObject(0)
 {
     this->engine = engine;
-    //this->root = engine->rootContext();
-    //this->textAlgorithManager = root->findChild("textAlgorithmManager");
 
-
-    nbPreviewsDisplayed = 3;
-    nbPreviewsMax = 10;
-    selectionAlpha = 1.0/3.0;
     algorithmManager = AlgorithmManager();
     layers = Layers();
     colors = Colors();
+    lines = Lines();
+    layerBlenders = LayerBlenders();
+
+    zoomMultiplier = 1.1f;
+    resetZoom();
+
+    previewX = 0.5f;
+    previewY = 0.5f;
+    useLayersAsMask = false;
+
+    lineSpacing = 30;
+    lineSpaceColor = cv::Vec3b(0xFF, 0xFF, 0xFF);
+    lineBackColor = cv::Vec3b(0xFF, 0xFF, 0xFF);
+
+    nbPreviewsDisplayed = 3;
+    nbPreviewsMax = 10;
+    previewFocusID = nbPreviewsMax-(nbPreviewsDisplayed/2);
+    selectionAlpha = 1.0/2.0;
 
     previews = Previews();
     previewLayers = Layers();
@@ -37,203 +55,378 @@ ImageManager::ImageManager(QQmlApplicationEngine* engine)
     previewLayers.resize(nbPreviewsMax);
     previewCreators.resize(nbPreviewsMax);
 
-    updateBackMatrix(Layer(1, 1, CV_8UC3));
-
-    rebasePreviews(&backMatrix, 1, 1);
-
-    //QImage base = new QImage(1, 1, QImage::Format_RGBA8888);
-
-
-    qDebug() << "creator instantiated";
-    initPreviewCreators();
-    qDebug() << "creators set";
-
     drawingTools = DrawingTools();
+    drawingTools.push_back(new NoTool());
+    drawingTools.push_back(new SelectTool());
     drawingTools.push_back(new CircleTool());
+    drawingTools.push_back(new RectangleTool());
+    drawingTools.push_back(new EraserCircleTool());
+    drawingTools.push_back(new WhiteOutCircleTool());
 
-    //resetPreviews();
+    initLayerBlenders();
+    selectedLayerBlenderID = 2;
+    hideDeletedPixels=0b11111111;
 
-    //setImage(initialImage());
-    //loadFile("C:/Users/corentin/Pictures/test.png");
-    //loadFile("C:/Users/corentin/Pictures/gfx/Antolach.png");
-    loadFile("C:/Users/corentin/Pictures/baseFond2.png");
+    resetBaseMatrix();
+    basePreviews();
+
 }
 
-void ImageManager::initPreviewCreators() {
-    // initiating with default values
-    PreviewCreator c = [&](Layer* RGBMatrix, Layer* mask) {};
-    for(int i=0; i<nbPreviewsMax; ++i) {
-        previewCreators[i] = c;
-    };
-
-
-    previewCreators[0] = [&](Layer* RGBMatrix, Layer* mask) {
-        QObject* parameters = new QObject();
-        parameters->setObjectName("niblack");
-        algorithmManager.applyText(RGBMatrix, mask, parameters);
-        delete parameters;
-    };
-    previewCreators[1] = [&](Layer* RGBMatrix, Layer* mask) {
-        QObject* parameters = new QObject();
-        parameters->setObjectName("sauvola");
-        algorithmManager.applyText(RGBMatrix, mask, parameters);
-        delete parameters;
-    };
-    previewCreators[2] = [&](Layer* RGBMatrix, Layer* mask) {
-        QObject* parameters = new QObject();
-        parameters->setObjectName("threshold");
-        algorithmManager.applyText(RGBMatrix, mask, parameters);
-        delete parameters;
-    };
-    previewCreators[3] = [&](Layer* RGBMatrix, Layer* mask) {
-        QObject* parameters = new QObject();
-        parameters->setObjectName("adaptiveThreshold");
-        algorithmManager.applyText(RGBMatrix, mask, parameters);
-        delete parameters;
-    };
+void ImageManager::resetBaseMatrix() {
+    updateBackMatrix(Layer::zeros(150, 100, CV_8UC3));
+    imageUpdate();
 }
 
+void ImageManager::basePreviews() {
+    int width = previewWidth ? previewWidth : 100;
+    int height = previewHeight ? previewHeight : 150;
+    rebasePreviews(&backMatrix, width, height);
+}
+
+void ImageManager::resetPreviews() {
+    basePreviews();
+    applyPreviews();
+    resetPreviewSelection();
+    previewsUpdate();
+}
+
+void ImageManager::reset() {
+    resetBaseMatrix();
+    resetPreviews();
+}
+
+void ImageManager::init() {
+    applyPreviews();
+    resetPreviewSelection();
+    previewsUpdate();
+    moveMainImage(0.5f, 0.5f);
+}
+
+void ImageManager::initLayerBlenders() {
+
+    //pixels characters blend
+    layerBlenders.push_back([&](uchar* in, uchar* inout, uchar* layerIn, int i, float, float) {
+        if(!in[i] && !in[i+1] && !in[i+2] && (layerIn[i] || layerIn[i+1] || layerIn[i+2])) { //non transparent pixel
+            inout[i  ] = hideDeletedPixels;
+            inout[i+1] = hideDeletedPixels;
+            inout[i+2] = hideDeletedPixels;
+        }
+    });
+
+    //gray layer blend
+    layerBlenders.push_back([&](uchar* in, uchar* inout, uchar* layerIn, int i, float alpha, float beta) {
+        if(layerIn[i] || layerIn[i+1] || layerIn[i+2]) { //non transparent pixel
+            inout[i  ] = std::round(inout[i  ]*beta + layerIn[i  ]*alpha);
+            inout[i+1] = std::round(inout[i+1]*beta + layerIn[i+1]*alpha);
+            inout[i+2] = std::round(inout[i+2]*beta + layerIn[i+2]*alpha);
+        } else {//transparent pixel
+            //do nothing
+        }
+    });
+
+    //white layer blend
+    layerBlenders.push_back([&](uchar* in, uchar* inout, uchar* layerIn, int i, float alpha, float beta) {
+        if(layerIn[i] || layerIn[i+1] || layerIn[i+2]) { //non transparent pixel
+            inout[i  ] = std::round(inout[i  ]*beta + layerIn[i  ]*alpha);
+            inout[i+1] = std::round(inout[i+1]*beta + layerIn[i+1]*alpha);
+            inout[i+2] = std::round(inout[i+2]*beta + layerIn[i+2]*alpha);
+        } else {//transparent pixel
+            //do nothing
+        }
+    });
+
+    //alpha blend
+    layerBlenders.push_back([&](uchar* in, uchar* inout, uchar* layerIn, int i, float alpha, float beta) {
+        if(layerIn[i] || layerIn[i+1] || layerIn[i+2]) { //non transparent pixel
+            inout[i  ] = std::round(inout[i  ]*beta + layerIn[i  ]*alpha);
+            inout[i+1] = std::round(inout[i+1]*beta + layerIn[i+1]*alpha);
+            inout[i+2] = std::round(inout[i+2]*beta + layerIn[i+2]*alpha);
+        } else {//transparent pixel
+            //do nothing
+        }
+    });
+
+    //pixels characters primary color blend
+    layerBlenders.push_back([&](uchar* in, uchar* inout, uchar* layerIn, int i, float, float) {
+        inout[i  ] |= layerIn[i  ];
+        inout[i+1] |= layerIn[i+1];
+        inout[i+2] |= layerIn[i+2];
+    });
+
+    //pixels characters primary color blend + transluscent background
+    layerBlenders.push_back([&](uchar* in, uchar* inout, uchar* layerIn, int i, float alpha, float beta) {
+        if(in[i] || in[i+1] || in[i+2]) { //back is not black
+            if(layerIn[i] || layerIn[i+1] || layerIn[i+2]) { //mask covers it
+                if(layerIn[i  ])
+                    inout[i  ] = std::max(inout[i  ], (uchar)std::round(layerIn[i  ]*alpha));
+                if (layerIn[i+1])
+                    inout[i+1] = std::max(inout[i+1], (uchar)std::round(layerIn[i+1]*alpha));
+                if (layerIn[i+2])
+                    inout[i+2] = std::max(inout[i+2], (uchar)std::round(layerIn[i+2]*alpha));
+            }
+        } else { //back is black
+            inout[i  ] |= layerIn[i  ];
+            inout[i+1] |= layerIn[i+1];
+            inout[i+2] |= layerIn[i+2];
+        }
+    });
+
+}
+
+bool ImageManager::toggleHiddenPixels() {
+    hideDeletedPixels = (hideDeletedPixels==0b11111111)
+            ? 0b10111111
+            : 0b11111111;
+    blendAndUpdate(&mainMatrix, &render);
+    return hideDeletedPixels==0b01111111;
+}
+
+float ImageManager::getImageZoom() {
+    return zoom;
+}
+
+float ImageManager::getZoomMultiplier() {
+    return zoomMultiplier;
+}
+
+void ImageManager::updateZoom() {
+    int z = getZoomIndex();
+    zoom = 1.0f;
+    if(z) {
+        float mul = getZoomMultiplier();
+        if(z<0) {
+            mul = 1.0f/mul;
+            z = -z;
+        }
+        for(int i=0; i<z; ++i)
+            zoom *= mul;
+    }
+    imageSizeUpdate();
+}
+
+int ImageManager::getZoomIndex() {
+    return zoomIndex;
+}
+
+int ImageManager::getMaxZoomIndex() {
+    return 10;
+}
+
+void ImageManager::resetZoom() {
+    zoomIndex = 0;
+    updateZoom();
+}
+
+void ImageManager::zoomIn() {
+    zoomIndex = std::min(zoomIndex+1, getMaxZoomIndex());
+    updateZoom();
+}
+
+void ImageManager::zoomOut() {
+    zoomIndex = std::max(zoomIndex-1, -getMaxZoomIndex());
+    updateZoom();
+}
+
+void ImageManager::read(ProjectReader* reader) {
+    updateBackMatrix(*(reader->readMat()));
+
+    int nbLayers = reader->readInt();
+    layers.resize(nbLayers);
+    for(int i=0; i<nbLayers; ++i) {
+        layers[i] = reader->readMat();
+    }
+    rebasePreviews(&backMatrix, 100, 150);
+    applyPreviews();
+    blendAndUpdate(&mainMatrix, &render);
+}
+
+void ImageManager::write(ProjectWriter* writer) {
+    writer->writeMat(&backMatrix);
+    int nbLayers = layers.size();
+    writer->writeInt(nbLayers);
+    for(int i=0; i<nbLayers; ++i) {
+        writer->writeMat(layers[i]);
+    }
+}
 
 void ImageManager::isolateLines() {
     int chan = mainMatrix.channels();
     int height = mainMatrix.rows;
-    int width = mainMatrix.cols * chan;
-    int size = width * height;
-    uchar* l;
-    int i, j;
+    int width = mainMatrix.cols;
+    int chanWidth = width*chan;
+    int size = width*height;
 
+    std::vector<Layer> ls = std::vector<Layer>();
+    std::vector<OOB> oobs = std::vector<OOB>();
+    Layer layerCopy = Layer(height, width, CV_8UC1);
+    Layer connected = Layer(height, width, CV_16U);
+    int i, j, k;
     int nbLayers = layers.size();
-    Layer* layer;
+    uint16_t* cp;
 
-    int tops[nbLayers];
-    int bottoms[nbLayers];
-
-    int order[nbLayers];
-    int orderIndex = 0;
-
-    bool isOrdered[nbLayers];
+    int nb = 0;
+    int nb_l;
+    uint16_t bottom, top;
 
     for(j=0; j<nbLayers; ++j) {
-        isOrdered[j] = false;
-        order[j] = -1;
-        tops[j] = -1;
-        bottoms[j] = -1;
-    }
-
-    for(i=0; i<size; i+=chan) {
-        for(j=0; j<nbLayers; ++j) {
-            layer = layers[j];
-            l = layer->ptr();
-
-            if(isOrdered[j]) {
-                if(l[i] || l[i+1] || l[i+2]) {
-                    bottoms[j] = i;
-                }
-            } else {
-                if(l[i] || l[i+1] || l[i+2]) { //non transparent pixel
-                    //adding layer to order
-                    isOrdered[j] = true;
-                    qDebug() << "bound" << orderIndex << "is for layer" << j << "( top is" << (i/width) << ")";
-                    order[orderIndex++] = j;
-                    tops[j] = i;
-                } //transparent pixel
-            }
+        cv::cvtColor(*layers[j], layerCopy, CV_RGB2GRAY);
+        nb_l = cv::connectedComponents(layerCopy, connected, 4, CV_16U) - 1;
+        oobs.resize(nb + nb_l);
+        for(i=nb; i<nb+nb_l; ++i) {
+            oobs[i].top = -1;
+            oobs[i].bottom = -1;
+            oobs[i].left = -1;
+            oobs[i].right = -1;
+            oobs[i].layerID = -1;
         }
+
+        cp = connected.ptr<uint16_t>();
+        k = size-1;
+        for(i=0; i<size; ++i) {
+            top = cp[i];
+            if(top) {
+                std::cout << i << " " << cp[i] << std::endl;
+                top = nb+top-1;
+                if(oobs[top].top==-1) {
+                    oobs[top].top = i/width;
+                    oobs[top].layerID = j;
+                }
+            }
+            bottom = cp[k];
+            if(bottom) {
+                bottom = nb+bottom-1;
+                if(oobs[bottom].bottom==-1) {
+                    oobs[bottom].bottom = k/width;
+                    oobs[bottom].layerID = j;
+                }
+            }
+            --k;
+        }
+        nb += nb_l;
     }
 
-    for(j=0; j<nbLayers; ++j) {
-        tops[j] /= width;
-        bottoms[j] /= width;
-        qDebug() << "bound" << tops[j] << "->" << bottoms[j];
+    //ordering oobs
+    std::sort(oobs.begin(), oobs.end(), [&](const OOB& a,const OOB& b){
+        return a.top < b.top;
+    });
+
+    int rows = 0;
+    for(i=0; i<nb; ++i) {
+        rows += oobs[i].bottom - oobs[i].top + 1;
+        rows += lineSpacing;
     }
 
-    qDebug() << "bounds found";
 
-    cv::Vec2i bounds[nbLayers];
+    lineMatrix = Layer(Layer::zeros(rows, width, CV_8UC3));
+    uchar* lp = lineMatrix.ptr();
+    cv::Vec3b vec;
 
-    for(j=0; j<nbLayers; ++j) {
-        bounds[j] = cv::Vec2i(tops[order[j]], bottoms[order[j]]);
-        qDebug() << "bounds" << j << " is [" << bounds[j][0] << "," << bounds[j][1] << "]";
-    }
-
-    qDebug() << "bounds ordered";
-
-    int sep = 50;
-    int rows = bounds[0][1] - bounds[0][0] + 1;
-    for(j=1; j<nbLayers; ++j) {
-        rows += sep;
-        rows += bounds[j][1] - bounds[j][0] + 1;
-    }
-
-    qDebug() << "line matrix size found (" << rows << "rows," << mainMatrix.cols << "cols)";
-
-    Layer* ll = new Layer(Layer::zeros((int)rows, (int)mainMatrix.cols, CV_8UC3));
-    uchar* lp = ll->ptr();
     for(i=0; i<rows*mainMatrix.cols*chan; i+=chan) {
-        lp[i  ] = 0xFF;
-        lp[i+1] = 0x25;
-        lp[i+2] = 0x68;
-    }
+        lp[i  ] = lineSpaceColor[0];
+        lp[i+1] = lineSpaceColor[1];
+        lp[i+2] = lineSpaceColor[2];
 
-    qDebug() << "line matrix created (" << rows << "rows," << mainMatrix.cols << "cols)";
+    }
 
     int x, y, rx, ry;
 
     rx = 0;
     ry = 0;
-    cv::Vec3b vec;
-    for(j=0; j<nbLayers; ++j) {
-        for(y=bounds[j][0]; y<=bounds[j][1]; ++y) {
-            for(x=0; x<ll->cols; ++x) {
-                vec = (*layers[j]).at<cv::Vec3b>(y, x);
-                if(vec[0] || vec[1] || vec[2])
-                    ll->at<cv::Vec3b>(ry+y-bounds[j][0], rx+x) = mainMatrix.at<cv::Vec3b>(y, x);
+    Layer* lll;
+    for(i=0; i<nb; ++i) {
+        lll = layers[oobs[i].layerID];
+        for(y=oobs[i].top; y<=oobs[i].bottom; ++y) {
+            for(x=0; x<lineMatrix.cols; ++x) {
+                vec = lll->at<cv::Vec3b>(y, x);
+                lineMatrix.at<cv::Vec3b>(ry+y-oobs[i].top, rx+x) =
+                        (vec[0] || vec[1] || vec[2])
+                        ? mainMatrix.at<cv::Vec3b>(y, x)
+                        : lineBackColor;
             }
         }
-        ry += sep + bounds[j][1] - bounds[j][0] + 1;
-
-        qDebug() << "layer" << j << "painted";
+        ry += lineSpacing + oobs[i].bottom - oobs[i].top + 1;
     }
-
-    qDebug() << "layers painted";
-
-    updateBackMatrix(*ll);
-
-    qDebug() << "line matrix set as main";
-
-    imageUpdate();
-
-    qDebug() << "display refresh requested";
 
 }
 
+bool ImageManager::isShowingIsolatedLines() {
+    return !showingSelectionLayer;
+}
+
+bool ImageManager::isShowingSelectionLayers() {
+    return showingSelectionLayer;
+}
+
+void ImageManager::showIsolatedLines() {
+    if(isShowingIsolatedLines())
+        return;
+    isolateLines();
+    setMainRenderData(lineMatrix);
+    showingSelectionLayer = false;
+}
+
+void ImageManager::showSelectionLayers() {
+    if(isShowingSelectionLayers())
+        return;
+    setMainRenderData(render);
+    showingSelectionLayer = true;
+}
+
+int ImageManager::getMainRenderWidth() {return mainImage.width();}
+int ImageManager::getMainRenderHeight() {return mainImage.height();}
+
+void ImageManager::setMainRenderData(Layer& RGBMatrix) {
+    mainImage = QImage(
+                RGBMatrix.data,
+                RGBMatrix.cols,
+                RGBMatrix.rows,
+                static_cast<int>(RGBMatrix.step),
+                QImage::Format_RGB888);
+    imageSizeUpdate();
+    imageUpdate();
+}
+
 void ImageManager::shiftPreviewsLeft() {
-    int i = 0;
-    QImage* first = previews[i];
-    while(i<nbPreviewsMax) {
-        previews[i] = previews[i+1];
-        ++i;
-    }
-    previews[nbPreviewsMax-1] = first;
+    previewFocusID = (previewFocusID+1)%nbPreviewsMax;
+    selectedPreviewID = (selectedPreviewID+nbPreviewsMax-1)%nbPreviewsMax;
     previewsUpdate();
 }
 
 void ImageManager::shiftPreviewsRight() {
-    int i = nbPreviewsMax-1;
-    QImage* last = previews[i];
-    while(i) {
-        previews[i] = previews[i-1];
-        --i;
-    }
-    previews[0] = last;
+    previewFocusID = (previewFocusID+nbPreviewsMax-1)%nbPreviewsMax;
+    selectedPreviewID = (selectedPreviewID+1)%nbPreviewsMax;
     previewsUpdate();
-
-    /*QImage* first = previews.front();
-    previews.erase(previews.begin());
-    previews.push_back(first);
-    previewUpdate();*/
 }
 
+int ImageManager::getSelectedAlgorithmID() {
+    return (previewFocusID + selectedPreviewID) % nbPreviewsMax;
+}
+
+bool ImageManager::hasPreviewSelected() {
+    return selectedPreviewID;
+}
+
+bool ImageManager::isPreviewSelected(int previewID) {
+    return selectedPreviewID==previewID;
+}
+
+void ImageManager::resetPreviewSelection() {
+    int id = nbPreviewsDisplayed/2;
+    previewFocusID = nbPreviewsMax-id;
+    selectPreview(id);
+}
+
+void ImageManager::selectPreview(int previewID) {
+    previewDeselection();
+    selectedPreviewID = previewID;
+    backMatrix.copyTo(mainMatrix);
+    applyPreview(getSelectedAlgorithmID(), &mainMatrix, getMaskLayer());
+    blendAndUpdate(&mainMatrix, &render);
+    previewSelection();
+    previewSelected = getSelectedAlgorithmID();
+}
+
+float ImageManager::getLayerAlpha() {return selectionAlpha;}
 int ImageManager::getPreviewWidth() {return previewWidth;}
 int ImageManager::getPreviewHeight() {return previewHeight;}
 int ImageManager::getSelectedPreviewID() {return selectedPreviewID;}
@@ -242,8 +435,20 @@ int ImageManager::getMaxPreviewY() {return previewReference->rows-previewHeight;
 int ImageManager::getPreviewX() {return std::round(getMaxPreviewX()*previewX);}
 int ImageManager::getPreviewY() {return std::round(getMaxPreviewY()*previewY);}
 
-
-
+int ImageManager::getMainWidth() {return mainWidth;}
+int ImageManager::getMainHeight() {return mainHeight;}
+int ImageManager::getMaxMainX() {
+    QObject* canvas = engine->rootObjects().first()->findChild<QObject*>("mainCanvas");
+    int width = canvas->property("width").toInt();
+    return width - backMatrix.cols*zoom;
+}
+int ImageManager::getMaxMainY() {
+    QObject* canvas = engine->rootObjects().first()->findChild<QObject*>("mainCanvas");
+    int height = canvas->property("height").toInt();
+    return height - backMatrix.rows*zoom;
+}
+int ImageManager::getMainX() {return std::round(getMaxMainX()*mainX);}
+int ImageManager::getMainY() {return std::round(getMaxMainY()*mainY);}
 
 QImage ImageManager::initialImage() {
     QImage init = QImage(200, 200, QImage::Format_RGBA8888);
@@ -259,6 +464,29 @@ QImage ImageManager::initialImage() {
     return init;
 }
 
+void ImageManager::createLine(Line& line, QObject* lineObject, QObject* parent) {
+    int rx = parent->property("width").toInt();
+    int ry = parent->property("height").toInt();
+    int x = 10;
+    int y = (line.y + line.height) / 2 * zoom;
+    lineObject->setProperty("x", x);
+    lineObject->setProperty("y", y);
+    qDebug() << x << y;
+    lines.push_back(line);
+}
+
+void ImageManager::selectLine(int lineID) {
+
+}
+
+Layer* ImageManager::newLayer() {
+    Layer* layer = new Layer(Layer::zeros(backMatrix.rows, backMatrix.cols, CV_8UC3));
+    layers.push_back(layer);
+    qDebug() << "new layer (" << layer->size << ")";
+    return layer;
+}
+
+
 DrawingTool* ImageManager::getDrawingTool(QString name) {
     DrawingTool* t;
     for(unsigned i=0; i<drawingTools.size(); ++i) {
@@ -266,34 +494,77 @@ DrawingTool* ImageManager::getDrawingTool(QString name) {
         if(t->getName() == name)
             return t;
     }
-    return NULL;
+    return drawingTools[0];
 }
 
-// conversion found at http://stackoverflow.com/a/36956273
 cv::Scalar colorToscalar(QColor color) {
     int r,g,b;
     color.getRgb(&r, &g, &b);
-    return cv::Scalar(b,g,r); // swap RGB-->BGR
+    return cv::Scalar(r,g,b);
 }
 
-// conversion found at http://stackoverflow.com/a/36956273
 QColor scalarToColor(cv::Scalar color) {
-    return QColor(color[2],color[1],color[0]); // swap RGB-->BGR
+    return QColor(color[0],color[1],color[2]);
 }
 
-void ImageManager::mouseDown(int xs, int ys, int xe, int ye, QString toolName, QColor color, QObject* sizeParameters) {
-    Layer* layer = getLayer(color);
+void ImageManager::toolPressed(int x, int y, QString toolName, bool isRightButton) {
+    qDebug() << toolName;
+    QObject* parameters = engine->rootObjects().first()->findChild<QObject*>(toolName+"Parameters");
+    qDebug() << parameters;
+    QColor color = parameters->property("color").value<QColor>();
     DrawingTool* tool = getDrawingTool(toolName);
-    cv::Scalar scalar = colorToscalar(color);
+    cv::Scalar scalar = tool->getActualColor(colorToscalar(color), isRightButton);
 
-    //qDebug() << toolName;
-    //std::cout << mainMatrix << std::endl;
-    //std::cout << render << std::endl;
+    Layer* layer = tool->usesHiddenLayer()
+            ? &hiddenLayer
+            : tool->requiresNewLayerOnPressed(scalar)
+              ? newLayer()
+              : getLayer(color);
+
 
     if(tool == NULL)
         return;
 
-    tool->draw(layer, xs, ys, xe, ye, scalar, sizeParameters);
+    tool->mousePressed(this, layer, x, y, colorToscalar(color), parameters);
+    blendAndUpdate(&mainMatrix, &render);
+}
+
+
+void ImageManager::toolDragged(int xs, int ys, int xe, int ye, QString toolName, bool isRightButton) {
+    QObject* parameters = engine->rootObjects().first()->findChild<QObject*>(toolName+"Parameters");
+    QColor color = parameters->property("color").value<QColor>();
+    DrawingTool* tool = getDrawingTool(toolName);
+    cv::Scalar scalar = tool->getActualColor(colorToscalar(color), isRightButton);
+
+    Layer* layer = tool->usesHiddenLayer()
+            ? &hiddenLayer
+            : tool->requiresNewLayerOnPressed(scalar)
+              ? newLayer()
+              : getLayer(color);
+
+    if(tool == NULL)
+        return;
+
+    tool->mouseDragged(this, layer, xs, ys, xe, ye, colorToscalar(color), parameters);
+    blendAndUpdate(&mainMatrix, &render);
+}
+
+void ImageManager::toolReleased(int xs, int ys, int xe, int ye, QString toolName, bool isRightButton) {
+    QObject* parameters = engine->rootObjects().first()->findChild<QObject*>(toolName+"Parameters");
+    QColor color = parameters->property("color").value<QColor>();
+    DrawingTool* tool = getDrawingTool(toolName);
+    cv::Scalar scalar = tool->getActualColor(colorToscalar(color), isRightButton);
+
+    Layer* layer = tool->usesHiddenLayer()
+            ? &hiddenLayer
+            : tool->requiresNewLayerOnPressed(scalar)
+              ? newLayer()
+              : getLayer(color);
+
+    if(tool == NULL)
+        return;
+
+    tool->mouseReleased(this, layer, xs, ys, xe, ye, colorToscalar(color), parameters);
     blendAndUpdate(&mainMatrix, &render);
 }
 
@@ -303,7 +574,10 @@ Layer* ImageManager::mainClone() {
 
 void ImageManager::updateBackMatrix(Layer layer) {
     backMatrix = layer;
+    mainWidth = layer.cols;
+    mainHeight = layer.rows;
     mainMatrix = backMatrix.clone();
+    hiddenLayer = Layer(Layer::zeros(backMatrix.rows, backMatrix.cols, CV_8UC3));
     render = backMatrix.clone();
     mainImage = QImage(
                 render.data,
@@ -311,33 +585,23 @@ void ImageManager::updateBackMatrix(Layer layer) {
                 render.rows,
                 static_cast<int>(render.step),
                 QImage::Format_RGB888);
+    resetLayers();
+    moveMainImage(mainX, mainY);
+    updateZoom();
 }
 
-bool ImageManager::loadFile(const QString &fileName) {
+bool ImageManager::loadFile(const QString& fileName) {
     Layer l = cv::imread(fileName.toStdString(), cv::IMREAD_COLOR);
-    qDebug() << "read";
     backMatrix = Layer(l.rows, l.cols, CV_8UC3);
     cv::cvtColor(l, backMatrix, cv::COLOR_RGBA2BGR);
-
     updateBackMatrix(backMatrix);
-
-    //mainImage = mainImage.rgbSwapped();
-    qDebug() << "image";
-
-    imageReady = false;
-    resetLayers();
-    qDebug() << "layers";
-    rebasePreviews(&backMatrix, 80, 120);
-    applyPreviews();
-    qDebug() << "previews";
-    blendAndUpdate(&mainMatrix, &render);
-    qDebug() << "blend";
-
+    resetPreviews();
+    imageUpdate();
     return true;
 }
 
 void ImageManager::resetLayers() {
-    for(int i=0; i<layers.size(); ++i) {
+    for(size_t i=0; i<layers.size(); ++i) {
         delete(layers[i]);
     }
     layers.clear();
@@ -345,15 +609,12 @@ void ImageManager::resetLayers() {
 }
 
 Layer* ImageManager::getLayer(QColor color) {
-    for(int i=0; i<colors.size(); ++i) {
+    for(size_t i=0; i<colors.size(); ++i) {
         if(color == colors[i])
             return layers[i];
     }
     colors.push_back(color);
-
-    Layer* layer = new Layer(Layer::zeros(mainMatrix.rows, mainMatrix.cols, CV_8UC3));
-    layers.push_back(layer);
-    return layer;
+    return newLayer();
 }
 
 
@@ -397,59 +658,86 @@ void ImageManager::rebasePreviews() {
     }
 }
 
+void ImageManager::rebasePreview(int id) {
+    Layer roi = (*previewReference)(cv::Rect(getPreviewX(), getPreviewY(), previewWidth, previewHeight));
+    roi.copyTo(*previewLayers[id]);
+}
+
 void ImageManager::movePreviews(float x, float y) {
-    qDebug() << x << y;
+    x = std::min(std::max(0.0f, x), 1.0f);
+    y = std::min(std::max(0.0f, y), 1.0f);
     if(previewX!=x || previewY!=y) {
         previewX = x;
         previewY = y;
         rebasePreviews();
         applyPreviews();
-
-        /*Layer preview = Layer(previewHeight, previewWidth, CV_8UC3);
-
-
-        Layer(rows, cols, CV_8UC3, new uchar[size], step);*/
-
     }
-
 }
 
-/*void ImageManager::applyNiblack(Layer* layer, Layer* mask) {
-    QObject* parameters = new QObject();
-    parameters->setObjectName("niblack");
-    algorithmManager.applyText(layer, mask, parameters);
-}*/
+void ImageManager::movePreviews(int dx, int dy) {
+    movePreviews(
+                (float)(getPreviewX() + dx)/getMaxPreviewX(),
+                (float)(getPreviewY() + dy)/getMaxPreviewY()
+                );
+}
+
+void ImageManager::moveMainImage(float x, float y) {
+    x = std::min(std::max(0.0f, x), 1.0f);
+    y = std::min(std::max(0.0f, y), 1.0f);
+    if(mainX!=x || mainY!=y) {
+        mainX = x;
+        mainY = y;
+    }
+    imageMoved();
+}
+
+void ImageManager::moveMainImage(int dx, int dy) {
+    qDebug() << "moved main        " << dx << dy;
+    qDebug() << "moved main (float)" << (float)(getMainX() + dx) << (float)(getMainY() + dy);
+    moveMainImage(
+                (float)(getMainX() + dx)/getMaxMainX(),
+                (float)(getMainY() + dy)/getMaxMainY()
+                );
+}
 
 void ImageManager::applyPreviews() {
     const int max = nbPreviewsMax;
-    for(int i=0; i<max; ++i) {
-        previewCreators[(selectedPreviewID+i)%max](previewLayers[i], getMaskLayer());
+    for(int i=1; i<max; ++i) {
+        applyPreview(i, previewLayers[i], getMaskLayer());
     }
-
-
-    /*previews.clear();
-    addPreview("niblack");
-    addPreview("sauvola");
-    addPreview("adaptiveThreshold");*/
-
     previewsUpdate();
-
-
-
-    /*QImage* i;
-    Layer* l;
-    QObject* previews = root->findChild("previews");
-
-    l = new Layer(mainMatrix.clone());*/
-    //textAlgorithManager->setProperty("algorithmName", "niblack");
-
-    /*QObject* preview1 = previews->findChild("preview1");
-    if(preview1 == NULL) {
-        preview1 = new QObject(previews);
-    }*/
-
 }
 
+void ImageManager::applyPreview(int id, Layer* RGBMatrix, Layer* mask) {
+    QObject* parameters =
+            engine->rootObjects().first()
+            ->findChild<QObject*>("algoColumn")
+            ->children().at(id+1)
+            ->children().first();
+    for(QObject* param : parameters->children()) {
+        algorithmManager.applyText(RGBMatrix, mask, param);
+        algorithmManager.applyLine(RGBMatrix, mask, param);
+        algorithmManager.applyRefine(RGBMatrix, mask, param);
+    }
+}
+
+void ImageManager::applyPreview(int id) {
+    rebasePreview(id);
+    applyPreview(id, previewLayers[id], getMaskLayer());
+    previewUpdate();
+
+    backMatrix.copyTo(mainMatrix);
+    applyPreview(getSelectedAlgorithmID(), &mainMatrix, getMaskLayer());
+    blendAndUpdate(&mainMatrix, &render);
+}
+
+LayerBlender* ImageManager::getLayerBlender() {
+    return &layerBlenders[selectedLayerBlenderID];
+}
+
+LayerBlender* ImageManager::getHiddenLayerBlender() {
+    return &layerBlenders[0];
+}
 
 void ImageManager::blend(Layer* in, Layer* out) {
 
@@ -459,51 +747,32 @@ void ImageManager::blend(Layer* in, Layer* out) {
     int height = in->rows;
     int width = in->cols * chan;
     int size = width * height;
+    uchar* p = in->ptr();
     uchar* r = out->ptr();
     uchar* l;
     float a = selectionAlpha;
     float b = 1.0f-a;
     int i;
+    LayerBlender* blender = getLayerBlender();
+    LayerBlender* hiddenBlender = getHiddenLayerBlender();
+
+
+    l = hiddenLayer.ptr();
+    for(i=0; i<size; i+=chan) {
+        (*hiddenBlender)(p, r, l, i, a, b);
+    }
     for(Layer* layer : layers) {
         l = layer->ptr();
         for(i=0; i<size; i+=chan) {
-            if(l[i] || l[i+1] || l[i+2]) { //non transparent pixel
-                r[i  ] = r[i  ]*b + l[i  ]*a;
-                r[i+1] = r[i+1]*b + l[i+1]*a;
-                r[i+2] = r[i+2]*b + l[i+2]*a;
-            } //transparent pixel
+            (*blender)(p, r, l, i, a, b);
         }
     }
-    //std::cout << mainMatrix << std::endl;
-    //std::cout << render << std::endl;
 }
 
 void ImageManager::blendAndUpdate(Layer* in, Layer* out) {
     blend(in, out);
     imageUpdate();
-    previewsUpdate();
-
-    /*QObject* object = new QObject();
-    object->setProperty("radius", 200);
-
-    mouseDown(100, 100, 0, "pinceau", new QColor(0x0000FF), object);*/
-
-    //qDebug() << "--- layers blending";
-    //qDebug() << "[V] layers blending";
-
-    /*qDebug() << "--- copying matrix data into image";
-    int size = render.total() * render.elemSize();
-    std::memcpy(mainImage.bits(), render.data, size);
-    qDebug() << "[V] copying matrix data into image";*/
-
-    //qDebug() << "--- image update";
-    //qDebug() << "[V] image update";
 }
-
-/*void ImageManager::resetDisplay(Layer* in, Layer* in, Layer* out) {
-    backMatrix.copyTo(mainMatrix);
-    blendAndUpdate(&mainMatrix, &render);
-}*/
 
 void ImageManager::resetDisplayInside(Layer* in, Layer* out, Layer* mask) {
     uchar* m = mask->ptr();
@@ -535,15 +804,12 @@ void ImageManager::applyText(QObject* parameters) {
 Layer* ImageManager::getMaskLayer() {
     const int rows = mainMatrix.rows;
     const int cols = mainMatrix.cols;
-    if(layers.empty()) {
+    if(!useLayersAsMask || layers.empty()) {
         if(&mask==NULL || cols != mask.cols || rows != mask.rows) {
             mask = Layer::ones(rows, cols, CV_8UC3);
-            qDebug() << "No default mask found : created one";
         }
-        qDebug() << "Default mask found";
         return &mask;
     }
-    qDebug() << "Base layer found";
     return layers[0];
 }
 
@@ -564,28 +830,22 @@ QImage ImageManager::getImage() {
 void ImageManager::addPreview(QString textAlgoName) {
 
     Layer* layer = new Layer(mainMatrix.clone());
-    qDebug() << "preview matrix created (" + textAlgoName + ")";
 
     QObject* parameters = engine->rootObjects().first()->findChild<QObject*>(textAlgoName);
-    qDebug() << "parameters found";
     Layer* mask = getMaskLayer();
-    qDebug() << "mask found";
 
     algorithmManager.applyText(layer, mask, parameters);
-    qDebug() << "algorithm applied";
     QImage* image = new QImage(
                 layer->data,
                 layer->cols,
                 layer->rows,
                 static_cast<int>(layer->step),
                 QImage::Format_RGB888);
-    qDebug() << "preview image created (" + textAlgoName + ")";
     previews.push_back(image);
-    qDebug() << "preview pushed to list";
 }
 
 QImage ImageManager::getPreview(int id) {
-    return *previews[id];
+    return *previews[(previewFocusID+id)%nbPreviewsMax];
 }
 
 
@@ -609,7 +869,6 @@ void ImageManager::updateMatrixes() {
             rows != mainMatrix.rows) {
 
         mainMatrix = Layer(rows, cols, CV_8UC3, new uchar[size], step);
-        //render = Layer(rows, cols, CV_8UC3, new uchar[size], step);
     }
 }
 
@@ -617,32 +876,23 @@ void ImageManager::updateMatrixes() {
 void ImageManager::setImage(Layer mat) {
 
     mainMatrix = mat;
-    //std::cout << mainMatrix << std::endl;
 
-    qDebug() << "--- initializing layers";
     resetLayers();
-    qDebug() << "[V] initializing layers";
 
 }
 
 void ImageManager::setImage(QImage image) {
 
-    qDebug() << "--- new image";
     mainImage = image.convertToFormat(QImage::Format_RGB888);
-    qDebug() << "[V] new image";
 
 
-    qDebug() << "--- updating matrix";
     updateMatrixes();
-    qDebug() << "[V] updating matrix";
 
-
-    qDebug() << "--- copying image data into matrix";
+;
     int size = mainMatrix.total() * mainMatrix.elemSize();
     uchar* src = mainImage.bits();
     uchar* dest = mainMatrix.data;
     std::memcpy(dest, src, size);
-    qDebug() << "[V] copying image data into matrix";
 
     std::cout << size << std::endl;
     std::cout << mainMatrix.total() << std::endl;
@@ -650,26 +900,10 @@ void ImageManager::setImage(QImage image) {
     std::cout << mainMatrix.step << std::endl;
     std::cout << mainMatrix << std::endl;
 
-    //imageToMat(mainImage, &mainMatrix);
-    qDebug() << "--- initializing layers";
     resetLayers();
-    qDebug() << "[V] initializing layers";
 }
 
-/*void ImageManager::blend() {
-    float beta = 1.0 - selectionAlpha;
-    qDebug() << selectionAlpha;
-
-    qDebug() << "--- --- cloning matrix";
-    //render = mainClone();
-    qDebug() << "--- [V] cloning matrix";
-
-    qDebug() << "--- --- layers weighting";
-    cv::addWeighted(mainMatrix, selectionAlpha, *layers[0], beta, 0.0, render);
-    qDebug() << "--- [V] layers weighting";
-}*/
-
-void ImageManager::imageToMat(QImage image, Layer* matrix) {
+void ImageManager::imageToMat(QImage, Layer*) {
     qDebug() << "--- image to matrix";
     /*Layer* mat = new Layer(
                 image.height(),
@@ -682,7 +916,7 @@ void ImageManager::imageToMat(QImage image, Layer* matrix) {
     //return mat;
 }
 
-void ImageManager::matToImage(Layer matrix, QImage* image) {
+void ImageManager::matToImage(Layer, QImage*) {
     qDebug() << "--- matrix to image";
     /*QImage image = new QImage(
                 mat->data,
@@ -708,145 +942,12 @@ void ImageManager::onImageUpdate() {
     qDebug() << "[V] image update";
 }
 
-static void completeFill(Layer l) {
-    for(int y=0; y<l.rows; ++y) {
-        for(int x=0; x<l.cols; ++x) {
-            l.at<RGB>(y, x)[0] = 0;
-            l.at<RGB>(y, x)[1] = 0;
-            l.at<RGB>(y, x)[2] = 255;
-        }
-    }
-}
-
-static void rectFill(Layer l) {
-    for(int y=l.rows/4; y<3*l.rows/4; ++y) {
-        for(int x=l.cols/4; x<3*l.cols/4; ++x) {
-            l.at<RGB>(y, x)[0] = 0;
-            l.at<RGB>(y, x)[1] = 0;
-            l.at<RGB>(y, x)[2] = 255;
-        }
-    }
-}
-
-static void fooFill(Layer l) {
-
-    std::srand(std::time(0)); // use current time as seed for random generator
-
-    //RNG rng();
-    //rng.fill(matrix2xN, cv::RNG::NORMAL, mean, sigma);
-    int wasTrue = false;
-    for(int y=0; y<l.rows; ++y) {
-        for(int x=0; x<l.cols; ++x) {
-            if(wasTrue ? std::rand()%2 : 1-std::rand()%2) {
-                wasTrue = true;
-                l.at<RGB>(y, x)[0] = 0;
-                l.at<RGB>(y, x)[1] = 0;
-                l.at<RGB>(y, x)[2] = 255;
-            } else {
-                wasTrue = false;
-            }
-        }
-    }
-}
-
-
-int ImageManager::getDefaultImageWidth() {
-    return 100;
-}
-
-int ImageManager::getDefaultImageHeight() {
-    return 100;
-}
-
-void ImageManager::add(QObject *image, QString source) {
-    /* QQmlEngine engine;
-    QQmlComponent component(&engine, "GeneaImage.qml");
-    QObject *object = component.create();*/
-    qDebug() << "added image " << source;
-
-    image->setProperty("x", 200);
-    image->setProperty("y", 150);
-    image->setProperty("width", getDefaultImageWidth());
-    image->setProperty("height", getDefaultImageHeight());
-    image->setProperty("source", source);
-}
-
-
-static void initializeImageFileDialog(QFileDialog &dialog, QFileDialog::AcceptMode acceptMode)
-{
-    static bool firstDialog = true;
-
-    if (firstDialog) {
-        firstDialog = false;
-        const QStringList picturesLocations =
-                QStandardPaths::standardLocations(QStandardPaths::PicturesLocation);
-
-        dialog.setDirectory(
-                    picturesLocations.isEmpty()
-                    ? QDir::currentPath()
-                    : picturesLocations.last()
-                      );
-    }
-
-    QStringList mimeTypeFilters;
-    const QByteArrayList supportedMimeTypes =
-            acceptMode == QFileDialog::AcceptOpen
-            ? QImageReader::supportedMimeTypes()
-            : QImageWriter::supportedMimeTypes();
-
-    foreach (const QByteArray &mimeTypeName, supportedMimeTypes)
-        mimeTypeFilters.append(mimeTypeName);
-
-    mimeTypeFilters.sort();
-    dialog.setMimeTypeFilters(mimeTypeFilters);
-    dialog.selectMimeTypeFilter("image/png");
-
-    if (acceptMode == QFileDialog::AcceptSave)
-        dialog.setDefaultSuffix("png");
-}
-
-void ImageManager::open()
-{
-    QFileDialog dialog(QApplication::activeWindow(), tr("Open File"));
-    initializeImageFileDialog(dialog, QFileDialog::AcceptOpen);
-
-    while (
-           dialog.exec() == QDialog::Accepted &&
-           !loadFile(dialog.selectedFiles().first())
-           ) {
-        qDebug() << "dialog opened at "+ dialog.selectedFiles().first();
-    }
-}
-
-void ImageManager::saveAs()
-{
-    QFileDialog dialog(QApplication::activeWindow(), tr("Save File As"));
-    initializeImageFileDialog(dialog, QFileDialog::AcceptSave);
-
-    while (
-           dialog.exec() == QDialog::Accepted &&
-           !saveFile(dialog.selectedFiles().first())
-           ) {}
-}
 
 
 
 
 
-bool ImageManager::saveFile(const QString &fileName)
-{
-    QImageWriter writer(fileName);
 
-    if (!writer.write(mainImage)) {
-        QMessageBox::information(QApplication::activeWindow(), QGuiApplication::applicationDisplayName(),
-                                 tr("Cannot write %1: %2")
-                                 .arg(QDir::toNativeSeparators(fileName)), writer.errorString());
-        return false;
-    }
-    const QString message = tr("Wrote \"%1\"").arg(QDir::toNativeSeparators(fileName));
-    //statusBar()->showMessage(message);
-    return true;
-}
 
 void ImageManager::print()
 {
@@ -889,33 +990,4 @@ void ImageManager::paste()
     }
 #endif // !QT_NO_CLIPBOARD
 }
-
-void ImageManager::zoomIn()
-{
-    //scaleImage(1.25);
-}
-
-void ImageManager::zoomOut()
-{
-    //scaleImage(0.8);
-}
-
-/*void imagemanager::normalSize()
-{
-    imageLabel->adjustSize();
-    scaleFactor = 1.0;
-}
-
-void imagemanager::scaleImage(double factor)
-{
-    Q_ASSERT(imageLabel->pixmap());
-    scaleFactor *= factor;
-    imageLabel->resize(scaleFactor * imageLabel->pixmap()->size());
-
-    adjustScrollBar(scrollArea->horizontalScrollBar(), factor);
-    adjustScrollBar(scrollArea->verticalScrollBar(), factor);
-
-    zoomInAct->setEnabled(scaleFactor < 3.0);
-    zoomOutAct->setEnabled(scaleFactor > 0.333);
-}*/
 

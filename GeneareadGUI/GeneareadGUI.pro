@@ -20,10 +20,19 @@ HEADERS += \
     header/algorithm/text/sauvola.h \
     header/algorithm/text/textAlgorithm.h \
     header/algorithm/text/threshold.h \
+    header/tool/noTool.h \
+    header/tool/selectTool.h \
+    header/tool/circleTool.h \
+    header/tool/drawingTool.h \
+    header/tool/eraserCircleTool.h \
+    header/tool/whiteOutCircleTool.h \
+    header/tool/rectangleTool.h \
+    header/io/projectReader.h \
+    header/io/projectWriter.h \
     header/image/imageManager.h \
     header/image/imageProvider.h \
-    header/tool/circleTool.h \
-    header/tool/drawingTool.h
+    header/io/project.h \
+    header/tool/whiteInCircleTool.h
 
 SOURCES += \
     src/algorithm/algorithmManager.cpp \
@@ -39,10 +48,19 @@ SOURCES += \
     src/algorithm/text/sauvola.cpp \
     src/algorithm/text/textAlgorithm.cpp \
     src/algorithm/text/threshold.cpp \
+    src/tool/noTool.cpp \
+    src/tool/selectTool.cpp \
+    src/tool/circleTool.cpp \
+    src/tool/rectangleTool.cpp \
+    src/tool/eraserCircleTool.cpp \
+    src/tool/whiteOutCircleTool.cpp \
     src/image/imageManager.cpp \
     src/image/imageProvider.cpp \
-    src/tool/circleTool.cpp \
-    src/main.cpp
+    src/io/projectReader.cpp \
+    src/io/projectWriter.cpp \
+    src/io/project.cpp \
+    src/main.cpp \
+    src/tool/whiteInCircleTool.cpp
 
 RESOURCES += qml/qml.qrc
 

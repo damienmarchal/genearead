@@ -17,16 +17,18 @@ void AdaptiveThreshold::setParameters(QObject* parameters) {
     QVariant v;
 
     if(!(v = parameters->property("w")).isNull()) {
-        w = v.toInt();
+        w = (std::round(v.toFloat()*4.0f)+1)*2+1;
     }
 
-    if(!(v = parameters->property("inv")).isNull()) {
-        thresholdType = v.toBool() ? cv::THRESH_BINARY_INV : cv::THRESH_BINARY;
+    if(!(v = parameters->property("inv_mean")).isNull()) {
+        float vf = v.toFloat();
+        thresholdType = vf>0.5f ? cv::THRESH_BINARY_INV : cv::THRESH_BINARY;
+        adaptiveMethod = vf<=0.25f || vf>0.75f ? cv::ADAPTIVE_THRESH_MEAN_C : cv::ADAPTIVE_THRESH_GAUSSIAN_C;
     }
 
-    if(!(v = parameters->property("mean")).isNull()) {
-        adaptiveMethod = v.toBool() ? cv::ADAPTIVE_THRESH_MEAN_C : cv::ADAPTIVE_THRESH_GAUSSIAN_C;
-    }
+    /*if(!(v = parameters->property("mean")).isNull()) {
+        float vf = v.toFloat();
+    }*/
 
 }
 

@@ -3,7 +3,7 @@
 
 Niblack::Niblack()
     : NiblackDerivedAlgorithm()
-    , k(0.2)
+    , k(0.2) //[0.2, 0.5]
 {
 
 }
@@ -21,7 +21,7 @@ void Niblack::setParameters(QObject* parameters) {
     }
 
     if(!(v = parameters->property("k")).isNull()) {
-        k = v.toDouble();
+        k = (v.toDouble()*0.3)+0.2;
     }
 
 }

@@ -3,6 +3,9 @@
 
 #include "../algorithm.h"
 
+/**
+ * @brief The LineAlgorithm class is intended as a base for line separation algorithms.
+ */
 class LineAlgorithm {
 
 public:

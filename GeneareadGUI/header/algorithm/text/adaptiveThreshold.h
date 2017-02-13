@@ -5,6 +5,11 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
+/**
+ * @brief The AdaptiveThreshold class is a TextAlgorithm that binarizes using local threshold factors.
+ * This class uses the cv::adaptiveThreshold implementation.
+ * See documentation for cv::adaptiveThreshold for informations about any class fields of this class.
+ */
 class AdaptiveThreshold : public TextAlgorithm {
 
 public:
