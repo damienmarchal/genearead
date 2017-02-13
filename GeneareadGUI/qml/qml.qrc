@@ -1,0 +1,43 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>MainForm.ui.qml</file>
+        <file>Cell.qml</file>
+        <file>Livret F.jpg</file>
+        <file>ItemCell.qml</file>
+        <file>ItemPalet.qml</file>
+        <file>Editing-Rectangle-icon.png</file>
+        <file>le-pinceau_318-9145.jpg</file>
+        <file>pinceau.png</file>
+        <file>ColorPalette.qml</file>
+        <file>ReturnColor.qml</file>
+        <file>plus.png</file>
+        <file>gomme.png</file>
+        <file>ColorCell.qml</file>
+        <file>PainterPalet.qml</file>
+        <file>point.png</file>
+        <file>LinesTool.qml</file>
+        <file>triangleBas.png</file>
+        <file>triangleHaut.png</file>
+        <file>BackTool.qml</file>
+        <file>BackAlgoPalet.qml</file>
+        <file>flechedroite.png</file>
+        <file>flechegauche.png</file>
+        <file>Livret Lucien.jpg</file>
+        <file>Livret.jpg</file>
+        <file>ImageCanvas.qml</file>
+        <file>select.png</file>
+        <file>Algorithm.qml</file>
+        <file>AlgorithmParameter.qml</file>
+        <file>GeneaImage.qml</file>
+        <file>LineIndex.qml</file>
+        <file>lineIndex.png</file>
+        <file>Preview.qml</file>
+        <file>NormalSlider.qml</file>
+        <file>AlgorithmSliders.qml</file>
+        <file>NormalSlider2D.qml</file>
+        <file>axes.png</file>
+        <file>BackItems.qml</file>
+        <file>whiteOut.png</file>
+    </qresource>
+</RCC>
